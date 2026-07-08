@@ -2,6 +2,7 @@
 import { apiHandler } from '../../../../../lib/middleware';
 import { paginatedResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';
+import type { Env } from '../../../../../lib/types';
 
 /** 允许的排序字段白名单（防 SQL 注入） */
 const SORT_COLUMNS_TOTALS: Record<string, string> = {
@@ -45,7 +46,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
 }, { requireAdmin: true });
 
 /** 查询累计数据 */
-async function queryTotals(env: any, opts: { page: number; limit: number; search: string; offset: number }) {
+async function queryTotals(env: Env, opts: { page: number; limit: number; search: string; offset: number }) {
   const { page, limit, search, offset } = opts;
   const sort = SORT_COLUMNS_TOTALS[search] || 'views';
 
@@ -75,7 +76,7 @@ async function queryTotals(env: any, opts: { page: number; limit: number; search
 }
 
 /** 查询时间段数据 */
-async function queryDaily(env: any, opts: { page: number; limit: number; search: string; period: string; offset: number }) {
+async function queryDaily(env: Env, opts: { page: number; limit: number; search: string; period: string; offset: number }) {
   const { page, limit, search, period, offset } = opts;
 
   // 根据时间段计算日期范围

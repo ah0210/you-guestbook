@@ -1,5 +1,6 @@
 // functions/api/v1/auth/zhihu/exchange.ts — 临时授权码 auth_code 换取 Access Token + Refresh Token
 import { apiHandler } from '../../../../../lib/middleware';
+import { toDbDatetime } from '../../../../../lib/sanitize';
 import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from '../../../../../lib/jwt';
 import { getAvatarUrl } from '../../../../../lib/avatar';
 import { ErrorCode, errorResponse, successResponse } from '../../../../../lib/response';
@@ -32,7 +33,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
   ).bind(code).run();
 
   // 3. 校验过期时间
-  if (new Date(record.expires_at).getTime() < Date.now()) {
+  if (record.expires_at < toDbDatetime()) {
     return errorResponse(ErrorCode.REFRESH_TOKEN_INVALID, '授权码已过期', 400);
   }
 
@@ -56,7 +57,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
   const refreshToken = generateToken();
   const refreshTokenHash = await hashToken(refreshToken);
   const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = new Date(Date.now() + refreshExpiry * 1000).toISOString();
+  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
 
   await env.DB.prepare(
     'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)'

@@ -45,7 +45,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
             COUNT(*) as views,
             COUNT(DISTINCT visitor_id) as visitors
      FROM analytics_events
-     WHERE channel = 'social' AND created_at >= datetime('now', '+8 hours', ?)
+     WHERE channel = 'social' AND created_at >= datetime('now', ?)
      GROUP BY referrer_domain
      ORDER BY views DESC
      LIMIT 50`
@@ -86,7 +86,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
             COUNT(*) as socialViews,
             COUNT(DISTINCT visitor_id) as socialVisitors
      FROM analytics_events
-     WHERE channel = 'social' AND created_at >= datetime('now', '+8 hours', ?)
+     WHERE channel = 'social' AND created_at >= datetime('now', ?)
      GROUP BY page_id
      ORDER BY socialViews DESC
      LIMIT 30`
@@ -98,7 +98,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
             COUNT(*) as views,
             COUNT(DISTINCT visitor_id) as visitors
      FROM analytics_events
-     WHERE channel = 'social' AND created_at >= datetime('now', '+8 hours', ?)
+     WHERE channel = 'social' AND created_at >= datetime('now', ?)
      GROUP BY date(created_at, '+8 hours')
      ORDER BY date ASC`
   ).bind(`-${days} days`).all();

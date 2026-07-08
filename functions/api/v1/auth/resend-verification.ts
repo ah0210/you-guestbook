@@ -3,6 +3,7 @@ import { apiHandler } from '../../../../lib/middleware';
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';
 import { generateToken, hashToken } from '../../../../lib/jwt';
 import { successResponse, errorResponse, ErrorCode } from '../../../../lib/response';
+import { toDbDatetime } from '../../../../lib/sanitize';
 import type { Env, DbUser, JwtPayload } from '../../../../lib/types';
 
 export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
@@ -22,7 +23,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
   ).bind(user!.userId).first<{ created_at: string }>();
 
   if (lastVerification) {
-    const elapsed = Date.now() - new Date(lastVerification.created_at).getTime();
+    const elapsed = Date.now() - new Date(lastVerification.created_at.replace(' ', 'T') + 'Z').getTime();
     if (elapsed < 60 * 1000) {
       return errorResponse(ErrorCode.RATE_LIMITED, '发送太频繁，请稍后再试', 429);
     }
@@ -30,7 +31,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
 
   // 生成新验证 token
   const verifyToken = generateToken();
-  const expiresAt = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  const expiresAt = toDbDatetime(new Date(Date.now() + 24 * 3600 * 1000));
 
   const verifyTokenHash = await hashToken(verifyToken);
   await env.DB.prepare(

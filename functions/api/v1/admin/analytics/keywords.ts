@@ -75,7 +75,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
   const referrerRows = await env.DB.prepare(
     `SELECT referrer, page_id, page_title, page_url, visitor_id
      FROM analytics_events
-     WHERE channel = 'search' AND created_at >= datetime('now', '+8 hours', ?)
+     WHERE channel = 'search' AND created_at >= datetime('now', ?)
        AND referrer != ''
      ORDER BY created_at DESC
      LIMIT 5000`
@@ -169,7 +169,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
                         OR referrer LIKE '%query=%' OR referrer LIKE '%kw=%' OR referrer LIKE '%p=%'
                         OR referrer LIKE '%text=%' THEN 1 END) as withKeywordViews
      FROM analytics_events
-     WHERE channel = 'search' AND created_at >= datetime('now', '+8 hours', ?)
+     WHERE channel = 'search' AND created_at >= datetime('now', ?)
      GROUP BY referrer_domain
      ORDER BY totalViews DESC
      LIMIT 10`

@@ -2,6 +2,7 @@
 import { apiHandler, getRefreshTokenFromCookie } from '../../../../lib/middleware';
 import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry, verifyAccessToken } from '../../../../lib/jwt';
 import { ErrorCode, errorResponse } from '../../../../lib/response';
+import { toDbDatetime } from '../../../../lib/sanitize';
 import type { Env, DbUser, DbRefreshToken, JwtPayload } from '../../../../lib/types';
 
 export const onRequestPost = apiHandler(async (request, env) => {
@@ -36,7 +37,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
   }
 
   // 检查是否过期
-  if (new Date(storedToken.expires_at) < new Date()) {
+  if (storedToken.expires_at < toDbDatetime()) {
     return errorResponse(ErrorCode.REFRESH_TOKEN_INVALID, 'Refresh Token 已过期', 401);
   }
 
@@ -54,7 +55,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
   const newRefreshToken = generateToken();
   const newTokenHash = await hashToken(newRefreshToken);
   const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = new Date(Date.now() + refreshExpiry * 1000).toISOString();
+  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
 
   await env.DB.prepare(
     `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)`

@@ -1,7 +1,7 @@
 // functions/api/v1/messages/index.ts — 留言列表 + 提交留言
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile';
-import { escapeHtml } from '../../../../lib/sanitize';
+import { escapeHtml, toDbDatetime } from '../../../../lib/sanitize';
 import { noCacheHeaders, cacheHeaders } from '../../../../lib/cache-headers';
 import { ErrorCode, errorResponse, successResponse, cursorPaginatedResponse } from '../../../../lib/response';
 import { toPublicUser } from '../../../../lib/types';
@@ -228,7 +228,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
   ).bind(user.userId, body.pageId, body.pageUrl || '', content, body.isSecret ? 1 : 0, body.replyTo || null, status, ipAddress).run();
 
   if (status === 'approved') {
-    await adjustMessageCount(env, body.pageId, body.pageUrl || '', new Date().toISOString(), 1);
+    await adjustMessageCount(env, body.pageId, body.pageUrl || '', toDbDatetime(), 1);
   }
 
   // 返回完整消息对象，便于前端乐观更新
@@ -249,7 +249,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
     isSecret: !!body.isSecret,
     status,
     replyTo: body.replyTo || null,
-    createdAt: new Date().toISOString(),
+    createdAt: toDbDatetime(),
     updatedAt: null,
     user: publicUser,
   };

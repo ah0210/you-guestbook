@@ -5,6 +5,7 @@ import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile'
 import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from '../../../../lib/jwt';
 import { getAvatarUrl } from '../../../../lib/avatar';
 import { ErrorCode, errorResponse } from '../../../../lib/response';
+import { toDbDatetime } from '../../../../lib/sanitize';
 import type { Env, DbUser } from '../../../../lib/types';
 
 const MAX_ATTEMPTS = 5;
@@ -23,7 +24,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
 
   // 分布式暴力破解防护：基于 D1 查询失败次数（跨边缘节点生效）
   const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const lockoutSince = new Date(Date.now() - LOCKOUT_SECONDS * 1000).toISOString();
+  const lockoutSince = toDbDatetime(new Date(Date.now() - LOCKOUT_SECONDS * 1000));
 
   // 并行查询最近失败次数与 Turnstile 配置
   const [recentFails, turnstileConfig] = await Promise.all([
@@ -79,7 +80,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
   ).bind(clientIP).run();
 
   // 清理超过 30 分钟的旧记录，避免表无限增长
-  const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const cutoff = toDbDatetime(new Date(Date.now() - 30 * 60 * 1000));
   await env.DB.prepare(
     'DELETE FROM login_attempts WHERE created_at < ?'
   ).bind(cutoff).run();
@@ -96,7 +97,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
   const refreshToken = generateToken();
   const refreshTokenHash = await hashToken(refreshToken);
   const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = new Date(Date.now() + refreshExpiry * 1000).toISOString();
+  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
 
   await env.DB.prepare(
     `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)`

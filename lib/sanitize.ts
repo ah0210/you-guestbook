@@ -63,3 +63,24 @@ export function validatePasswordStrength(password: string): string | null {
   }
   return null;
 }
+
+/** 将 JS Date 转换为 SQLite datetime 格式 (YYYY-MM-DD HH:MM:SS) */
+export function toDbDatetime(date: Date = new Date()): string {
+  return date.toISOString().replace('T', ' ').slice(0, 19);
+}
+
+/** 校验重定向 URL 是否安全，并返回绝对路径的安全 URL，防 Open Redirect */
+export function safeRedirectUrl(redirect: string, publicUrl: string): string {
+  if (!redirect) return publicUrl;
+  try {
+    const targetUrl = new URL(redirect, publicUrl);
+    const publicUrlObj = new URL(publicUrl);
+    if (targetUrl.hostname === publicUrlObj.hostname) {
+      return targetUrl.toString();
+    }
+  } catch {
+    // 忽略解析错误
+  }
+  return publicUrl;
+}
+

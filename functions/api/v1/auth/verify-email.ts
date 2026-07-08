@@ -2,7 +2,7 @@
 import { apiHandler } from '../../../../lib/middleware';
 import { hashToken } from '../../../../lib/jwt';
 import { successResponse, errorResponse, ErrorCode } from '../../../../lib/response';
-import { escapeHtml } from '../../../../lib/sanitize';
+import { escapeHtml, toDbDatetime } from '../../../../lib/sanitize';
 import type { Env, DbVerification } from '../../../../lib/types';
 
 export const onRequestGet = apiHandler(async (request, env) => {
@@ -31,7 +31,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
   }
 
   // 检查是否过期
-  if (new Date(verification.expires_at) < new Date()) {
+  if (verification.expires_at < toDbDatetime()) {
     return new Response(buildVerifyResultHtml('验证链接已过期', '请重新发送验证邮件。', true), {
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });

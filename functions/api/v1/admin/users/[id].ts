@@ -1,6 +1,7 @@
 // functions/api/v1/admin/users/[id].ts — 变更用户角色/状态、删除用户
 import { apiHandler, getClientIp } from '../../../../../lib/middleware';
 import { logAdminAction } from '../../../../../lib/admin-log';
+import { adjustMessageCount } from '../../../../../lib/analytics';
 import { ErrorCode, errorResponse, successResponse } from '../../../../../lib/response';
 import type { Env, DbUser, JwtPayload } from '../../../../../lib/types';
 
@@ -88,11 +89,21 @@ export const onRequestDelete = apiHandler(async (request, env, ctx, user) => {
     return errorResponse(ErrorCode.VALIDATION_ERROR, '不能删除管理员用户', 400);
   }
 
+  // 先获取该用户审核通过的留言，用于之后递减统计计数
+  const approvedMessages = await env.DB.prepare(
+    `SELECT page_id, page_url, created_at FROM messages WHERE user_id = ? AND status = 'approved'`
+  ).bind(id).all<{ page_id: string; page_url: string; created_at: string }>();
+
   // 先删除该用户的留言
   await env.DB.prepare('DELETE FROM messages WHERE user_id = ?').bind(id).run();
 
   // 再删除用户
   await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(id).run();
+
+  // 递减统计计数
+  for (const message of approvedMessages.results || []) {
+    await adjustMessageCount(env, message.page_id, message.page_url || '', message.created_at, -1);
+  }
 
   await logAdminAction(
     env, user!.userId, 'delete_user',

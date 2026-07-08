@@ -2,7 +2,7 @@
 import { apiHandler } from '../../../../lib/middleware';
 import { hashPassword } from '../../../../lib/crypto';
 import { hashToken } from '../../../../lib/jwt';
-import { validatePasswordStrength } from '../../../../lib/sanitize';
+import { validatePasswordStrength, toDbDatetime } from '../../../../lib/sanitize';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
 import type { Env } from '../../../../lib/types';
 
@@ -42,7 +42,7 @@ export const onRequestPost = apiHandler(async (request, env) => {
     return errorResponse(ErrorCode.PASSWORD_RESET_USED, '重置链接已使用', 400);
   }
 
-  if (new Date(resetRecord.expires_at) < new Date()) {
+  if (resetRecord.expires_at < toDbDatetime()) {
     return errorResponse(ErrorCode.PASSWORD_RESET_EXPIRED, '重置链接已过期，请重新申请', 400);
   }
 

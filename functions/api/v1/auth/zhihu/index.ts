@@ -1,6 +1,7 @@
 // functions/api/v1/auth/zhihu/index.ts — 发起知乎 OAuth 授权（302 重定向到知乎授权页）
 
 import { buildAuthorizeUrl, generateState } from '../../../../../lib/zhihu';
+import { safeRedirectUrl } from '../../../../../lib/sanitize';
 import { ErrorCode, errorResponse } from '../../../../../lib/response';
 import type { Env } from '../../../../../lib/types';
 
@@ -15,6 +16,7 @@ export const onRequestGet = async (context: EventContext<Env, any, Record<string
 
   const url = new URL(request.url);
   const redirect = url.searchParams.get('redirect') || '';
+  const safeRedirect = safeRedirectUrl(redirect, env.PUBLIC_URL);
 
   const state = generateState();
   const redirectUri = `${env.PUBLIC_URL}/api/v1/auth/zhihu/callback`;
@@ -29,7 +31,7 @@ export const onRequestGet = async (context: EventContext<Env, any, Record<string
   console.log('[知乎 OAuth 发起] authorize_url:', authorizeUrl);
 
   // 将 redirect 地址编码后存入 Cookie，回调时读取
-  const stateData = JSON.stringify({ s: state, r: redirect });
+  const stateData = JSON.stringify({ s: state, r: safeRedirect });
   const encodedStateData = btoa(unescape(encodeURIComponent(stateData)));
 
   return new Response(null, {

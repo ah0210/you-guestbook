@@ -4,7 +4,7 @@ import { verifyPassword } from '../../../../lib/crypto';
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';
 import { generateToken, hashToken } from '../../../../lib/jwt';
 import { getAvatarUrl } from '../../../../lib/avatar';
-import { sanitizeEmail } from '../../../../lib/sanitize';
+import { sanitizeEmail, toDbDatetime } from '../../../../lib/sanitize';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
 import type { Env, DbUser, JwtPayload } from '../../../../lib/types';
 
@@ -63,7 +63,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
   // 生成验证 token
   const verifyToken = generateToken();
   const verifyTokenHash = await hashToken(verifyToken);
-  const verifyExpires = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  const verifyExpires = toDbDatetime(new Date(Date.now() + 24 * 3600 * 1000));
   await env.DB.prepare(
     'INSERT INTO email_verifications (user_id, token, expires_at) VALUES (?, ?, ?)'
   ).bind(user!.userId, verifyTokenHash, verifyExpires).run();

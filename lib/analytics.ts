@@ -171,7 +171,7 @@ export async function recordPageView(
   // 阶段1：去重检查（需同步等结果）
   const duplicate = await env.DB.prepare(
     `SELECT id FROM analytics_events
-     WHERE page_id = ? AND visitor_id = ? AND created_at >= datetime('now', '+8 hours', '-5 seconds')
+     WHERE page_id = ? AND visitor_id = ? AND created_at >= datetime('now', '-5 seconds')
      LIMIT 1`
   ).bind(pageId, visitorId).first<{ id: number }>();
 

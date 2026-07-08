@@ -5,6 +5,7 @@ import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from
 import { getAvatarUrl } from '../../../../../lib/avatar';
 import { hashPassword } from '../../../../../lib/crypto';
 import { withCors } from '../../../../../lib/cors';
+import { toDbDatetime } from '../../../../../lib/sanitize';
 import type { Env, DbUser, DbOAuthConnection } from '../../../../../lib/types';
 
 const OAUTH_PLACEHOLDER_EMAIL_DOMAIN = 'oauth.placeholder';
@@ -95,7 +96,7 @@ async function handleCallback(context: EventContext<Env, any, Record<string, unk
         `UPDATE oauth_connections SET access_token = ?, token_expires = ?, provider_info = ?, updated_at = datetime('now') WHERE id = ?`
       ).bind(
         tokenResp.access_token,
-        new Date(Date.now() + tokenResp.expires_in * 1000).toISOString(),
+        toDbDatetime(new Date(Date.now() + tokenResp.expires_in * 1000)),
         JSON.stringify(zhihuUser),
         existingConn.id,
       ).run();
@@ -202,7 +203,7 @@ async function handleCallback(context: EventContext<Env, any, Record<string, unk
           'zhihu',
           providerUid,
           tokenResp.access_token,
-          new Date(Date.now() + tokenResp.expires_in * 1000).toISOString(),
+          toDbDatetime(new Date(Date.now() + tokenResp.expires_in * 1000)),
           JSON.stringify(zhihuUser),
         ).run();
 
@@ -225,7 +226,7 @@ async function handleCallback(context: EventContext<Env, any, Record<string, unk
 
     // 9. 生成 5 分钟有效的临时 auth_code 并存入 oauth_auth_codes 表
     const authCode = generateToken();
-    const codeExpiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    const codeExpiresAt = toDbDatetime(new Date(Date.now() + 5 * 60 * 1000));
     await env.DB.prepare(
       'INSERT INTO oauth_auth_codes (code, user_id, expires_at) VALUES (?, ?, ?)'
     ).bind(authCode, userId, codeExpiresAt).run();

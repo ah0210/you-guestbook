@@ -5,7 +5,7 @@ import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile'
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';
 import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from '../../../../lib/jwt';
 import { getAvatarUrl } from '../../../../lib/avatar';
-import { escapeHtml, sanitizeUsername, sanitizeEmail, validatePasswordStrength, validateEmail, validatePhone } from '../../../../lib/sanitize';
+import { escapeHtml, sanitizeUsername, sanitizeEmail, validatePasswordStrength, validateEmail, validatePhone, toDbDatetime } from '../../../../lib/sanitize';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
 import type { Env, DbUser } from '../../../../lib/types';
 
@@ -39,7 +39,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
 
   // IP 频率限制检查（10分钟内最多3次）
   const clientIp = getClientIp(request);
-  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const tenMinutesAgo = toDbDatetime(new Date(Date.now() - 10 * 60 * 1000));
   const attempts = await env.DB.prepare(
     'SELECT COUNT(*) as count FROM register_attempts WHERE ip_address = ? AND created_at > ?'
   ).bind(clientIp, tenMinutesAgo).first<{ count: number }>();
@@ -123,7 +123,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
   const refreshToken = generateToken();
   const refreshTokenHash = await hashToken(refreshToken);
   const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = new Date(Date.now() + refreshExpiry * 1000).toISOString();
+  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
 
   await env.DB.prepare(
     `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)`
@@ -135,7 +135,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
   // 创建邮箱验证 token
   const verifyToken = generateToken();
   const verifyTokenHash = await hashToken(verifyToken);
-  const verifyExpires = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  const verifyExpires = toDbDatetime(new Date(Date.now() + 24 * 3600 * 1000));
   await env.DB.prepare(
     `INSERT INTO email_verifications (user_id, token, expires_at) VALUES (?, ?, ?)`
   ).bind(userId, verifyTokenHash, verifyExpires).run();

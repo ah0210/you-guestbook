@@ -3,7 +3,7 @@ import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile';
 import { sendEmail, buildResetPasswordHtml } from '../../../../lib/email';
 import { generateToken, hashToken } from '../../../../lib/jwt';
-import { sanitizeEmail } from '../../../../lib/sanitize';
+import { sanitizeEmail, toDbDatetime } from '../../../../lib/sanitize';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
 import type { Env, DbUser } from '../../../../lib/types';
 
@@ -32,7 +32,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
 
   // IP 频率限制：5分钟3次
   const clientIp = getClientIp(request);
-  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const fiveMinAgo = toDbDatetime(new Date(Date.now() - 5 * 60 * 1000));
   const ipCount = await env.DB.prepare(
     'SELECT COUNT(*) as count FROM password_resets WHERE ip_address = ? AND created_at > ?'
   ).bind(clientIp, fiveMinAgo).first<{ count: number }>();
@@ -41,7 +41,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
   }
 
   // 邮箱频率限制：1分钟1次
-  const oneMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
+  const oneMinAgo = toDbDatetime(new Date(Date.now() - 60 * 1000));
   const emailCount = await env.DB.prepare(
     'SELECT COUNT(*) as count FROM password_resets pr JOIN users u ON pr.user_id = u.id WHERE u.email = ? AND pr.created_at > ?'
   ).bind(email, oneMinAgo).first<{ count: number }>();
@@ -58,7 +58,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
     // 生成重置 token
     const resetToken = generateToken();
     const resetTokenHash = await hashToken(resetToken);
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1小时有效
+    const expiresAt = toDbDatetime(new Date(Date.now() + 60 * 60 * 1000)); // 1小时有效
 
     await env.DB.prepare(
       'INSERT INTO password_resets (user_id, token_hash, expires_at, ip_address) VALUES (?, ?, ?, ?)'
