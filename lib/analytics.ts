@@ -1,3 +1,4 @@
+import { isAllowedOrigin } from './cors';
 import { getClientIp } from './middleware';
 import type { Env } from './types';
 
@@ -51,6 +52,19 @@ const CHANNEL_COLUMNS: Record<Channel, string> = {
   social: 'social_views',
 };
 
+const RATE_LIMIT_WINDOW_SECONDS = 60;
+const MAX_EVENTS_PER_IP_PER_WINDOW = 60;
+const MAX_EVENTS_PER_ORIGIN_PER_WINDOW = 600;
+const DUPLICATE_WINDOW_SECONDS = 30;
+const ID_PATTERN = /^[a-z]_[A-Za-z0-9_-]{8,80}$/;
+
+export class AnalyticsRequestError extends Error {
+  constructor(message: string, public status: number, public code: 'forbidden' | 'rate_limited' | 'invalid') {
+    super(message);
+    this.name = 'AnalyticsRequestError';
+  }
+}
+
 function text(value: unknown, maxLength: number): string {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
 }
@@ -64,6 +78,56 @@ function normalizeChannel(value: unknown): Channel {
   return value === 'internal' || value === 'search' || value === 'referral' || value === 'social'
     ? value
     : 'direct';
+}
+
+function validateTrackingId(value: string, prefix: 'v' | 's', fieldName: string): void {
+  if (!ID_PATTERN.test(value) || !value.startsWith(`${prefix}_`)) {
+    throw new AnalyticsRequestError(`${fieldName} is invalid`, 400, 'invalid');
+  }
+}
+
+function validatePageId(pageId: string): void {
+  if (pageId.length > 500 || !pageId.startsWith('/') || pageId.startsWith('//')) {
+    throw new AnalyticsRequestError('pageId is invalid', 400, 'invalid');
+  }
+  if (/[\u0000-\u001f\u007f\\#]/.test(pageId) || pageId.includes('..')) {
+    throw new AnalyticsRequestError('pageId is invalid', 400, 'invalid');
+  }
+}
+
+function sameOriginUrl(value: unknown, origin: string, fieldName: string): string {
+  const raw = text(value, 1000);
+  if (!raw) return '';
+  try {
+    const url = new URL(raw, origin);
+    if (url.origin !== origin) {
+      throw new Error('origin mismatch');
+    }
+    return url.toString();
+  } catch {
+    throw new AnalyticsRequestError(`${fieldName} origin is not allowed`, 403, 'forbidden');
+  }
+}
+
+async function enforceAnalyticsRateLimit(env: Env, clientIp: string, origin: string): Promise<void> {
+  const windowModifier = `-${RATE_LIMIT_WINDOW_SECONDS} seconds`;
+  const [ipCount, originCount] = await Promise.all([
+    env.DB.prepare(
+      `SELECT COUNT(*) as count FROM analytics_events
+       WHERE created_at >= datetime('now', ?) AND ip_address = ?`
+    ).bind(windowModifier, clientIp).first<{ count: number }>(),
+    env.DB.prepare(
+      `SELECT COUNT(*) as count FROM analytics_events
+       WHERE created_at >= datetime('now', ?) AND page_url LIKE ?`
+    ).bind(windowModifier, `${origin}%`).first<{ count: number }>(),
+  ]);
+
+  if ((ipCount?.count || 0) >= MAX_EVENTS_PER_IP_PER_WINDOW) {
+    throw new AnalyticsRequestError('Too many analytics events from this IP', 429, 'rate_limited');
+  }
+  if ((originCount?.count || 0) >= MAX_EVENTS_PER_ORIGIN_PER_WINDOW) {
+    throw new AnalyticsRequestError('Too many analytics events from this origin', 429, 'rate_limited');
+  }
 }
 
 /** 获取中国时区（UTC+8）的今日日期 */
@@ -155,25 +219,44 @@ async function getApprovedMessageCount(env: Env, pageId: string): Promise<number
 export async function recordPageView(
   env: Env, request: Request, body: AnalyticsViewBody
 ): Promise<{ stats: PageStats; writePromise: Promise<void> }> {
+  const origin = request.headers.get('Origin') || '';
+  if (!isAllowedOrigin(origin, env)) {
+    throw new AnalyticsRequestError('Analytics origin is not allowed', 403, 'forbidden');
+  }
+
   const pageId = text(body.pageId, 500);
   const visitorId = text(body.visitorId, 128);
   const sessionId = text(body.sessionId, 128);
 
   if (!pageId || !visitorId || !sessionId) {
-    throw new Error('pageId, visitorId and sessionId are required');
+    throw new AnalyticsRequestError('pageId, visitorId and sessionId are required', 400, 'invalid');
   }
+  validatePageId(pageId);
+  validateTrackingId(visitorId, 'v', 'visitorId');
+  validateTrackingId(sessionId, 's', 'sessionId');
+
+  const clientIp = getClientIp(request);
+  const pageUrl = sameOriginUrl(body.pageUrl, origin, 'pageUrl');
+  if (!pageUrl) {
+    throw new AnalyticsRequestError('pageUrl is required', 400, 'invalid');
+  }
+  const canonicalUrl = sameOriginUrl(body.canonicalUrl, origin, 'canonicalUrl');
 
   if (!(await isAnalyticsEnabled(env))) {
     const stats = await getPageStats(env, pageId);
     return { stats, writePromise: Promise.resolve() };
   }
 
+  await enforceAnalyticsRateLimit(env, clientIp, origin);
+
   // 阶段1：去重检查（需同步等结果）
   const duplicate = await env.DB.prepare(
     `SELECT id FROM analytics_events
-     WHERE page_id = ? AND visitor_id = ? AND created_at >= datetime('now', '-5 seconds')
+     WHERE page_id = ?
+       AND (visitor_id = ? OR session_id = ?)
+       AND created_at >= datetime('now', ?)
      LIMIT 1`
-  ).bind(pageId, visitorId).first<{ id: number }>();
+  ).bind(pageId, visitorId, sessionId, `-${DUPLICATE_WINDOW_SECONDS} seconds`).first<{ id: number }>();
 
   if (duplicate) {
     const stats = await getPageStats(env, pageId);
@@ -202,8 +285,7 @@ export async function recordPageView(
   }>();
 
   const pageTitle = text(body.pageTitle, 300);
-  const pageUrl = text(body.pageUrl, 1000);
-  const canonicalUrl = text(body.canonicalUrl, 1000);
+  // pageUrl/canonicalUrl were already normalized against the trusted Origin.
   const referrer = text(body.referrer, 1000);
   const referrerDomain = text(body.referrerDomain, 255);
   const utmSource = text(body.utm?.source, 100);
@@ -249,7 +331,7 @@ export async function recordPageView(
       int(body.screen?.width), int(body.screen?.height),
       int(body.viewport?.width), int(body.viewport?.height),
       text(body.language, 50), text(body.timezone, 80),
-      getClientIp(request), visitorId, sessionId
+      clientIp, visitorId, sessionId
     ),
     // 4b. 去重访客
     env.DB.prepare(

@@ -18,14 +18,21 @@ const CORS_HEADERS = [
   'Access-Control-Expose-Headers',
 ];
 
+export function getAllowedOrigins(env: Env): string[] {
+  const allowed = env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()) || DEFAULT_ALLOWED_ORIGINS;
+  // 防御：过滤掉通配符和空值，避免 Allow-Credentials + * 的安全隐患
+  return allowed.filter(o => o && o !== '*');
+}
+
+export function isAllowedOrigin(origin: string, env: Env): boolean {
+  if (!origin) return false;
+  return getAllowedOrigins(env).includes(origin);
+}
+
 export function corsHeaders(request: Request, env: Env): Record<string, string> {
   const origin = request.headers.get('Origin') || '';
-  const allowed = env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()) || DEFAULT_ALLOWED_ORIGINS;
 
-  // 防御：过滤掉通配符和空值，避免 Allow-Credentials + * 的安全隐患
-  const safeOrigins = allowed.filter(o => o && o !== '*');
-
-  if (!safeOrigins.includes(origin)) {
+  if (!isAllowedOrigin(origin, env)) {
     return {};
   }
 

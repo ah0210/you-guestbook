@@ -1,5 +1,5 @@
 // functions/api/v1/analytics/view.ts — 访问事件上报（WaitUntil 异步写入）
-import { recordPageView } from '../../../../lib/analytics';
+import { AnalyticsRequestError, recordPageView } from '../../../../lib/analytics';
 import { apiHandler } from '../../../../lib/middleware';
 import { noCacheHeaders } from '../../../../lib/cache-headers';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
@@ -14,6 +14,10 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
     ctx.waitUntil(writePromise);
     return successResponse(stats, noCacheHeaders());
   } catch (error) {
+    if (error instanceof AnalyticsRequestError) {
+      const code = error.code === 'rate_limited' ? ErrorCode.RATE_LIMITED : error.code === 'forbidden' ? ErrorCode.FORBIDDEN : ErrorCode.VALIDATION_ERROR;
+      return errorResponse(code, error.message, error.status);
+    }
     const message = error instanceof Error ? error.message : '访问统计参数无效';
     return errorResponse(ErrorCode.VALIDATION_ERROR, message, 400);
   }
