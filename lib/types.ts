@@ -188,6 +188,7 @@ export interface SetupBody {
   username: string;
   email: string;
   password: string;
+  adminPassword: string;
 }
 
 // ===== 工具类型 =====

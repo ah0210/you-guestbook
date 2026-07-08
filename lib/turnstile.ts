@@ -1,5 +1,9 @@
 // lib/turnstile.ts — Cloudflare Turnstile 验证码校验
 
+import { getClientIp } from './middleware';
+import { ErrorCode } from './response';
+import type { Env } from './types';
+
 // Cloudflare 官方测试 Secret Key（本地开发用，注意不是 Site Key）
 const PASSING_TEST_SECRET_KEYS = new Set([
   '1x0000000000000000000000000000000AA',
@@ -31,6 +35,29 @@ export function isTurnstileConfigured(secretKey: string): boolean {
  */
 export function shouldSkipTurnstile(_secretKey: string, forceSkip?: boolean): boolean {
   return forceSkip === true;
+}
+
+/**
+ * 统一校验当前请求的 Turnstile 验证码（含 force_skip_turnstile 降级开关）
+ * @returns null 表示通过；否则返回 { message, code } 由调用方直接返回
+ */
+export async function verifyTurnstileForRequest(
+  request: Request,
+  turnstileToken: string | undefined,
+  env: Env
+): Promise<{ message: string; code: ErrorCode } | null> {
+  const cfg = await env.DB.prepare(
+    'SELECT force_skip_turnstile FROM board_config WHERE id = 1'
+  ).first<{ force_skip_turnstile: number }>();
+
+  if (shouldSkipTurnstile(env.TURNSTILE_SECRET_KEY || '', cfg?.force_skip_turnstile === 1)) {
+    return null;
+  }
+  if (!turnstileToken || !turnstileToken.trim()) {
+    return { message: '请完成验证码验证', code: ErrorCode.VALIDATION_ERROR };
+  }
+  const valid = await verifyTurnstile(turnstileToken, env.TURNSTILE_SECRET_KEY, getClientIp(request));
+  return valid ? null : { message: '验证码验证失败，请重试', code: ErrorCode.TURNSTILE_FAILED };
 }
 
 /**

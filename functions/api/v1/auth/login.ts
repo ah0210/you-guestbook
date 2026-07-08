@@ -1,9 +1,9 @@
 // functions/api/v1/auth/login.ts — 用户登录（返回双 Token）
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { verifyPassword } from '../../../../lib/crypto';
-import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile';
-import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from '../../../../lib/jwt';
+import { verifyTurnstileForRequest } from '../../../../lib/turnstile';
 import { getAvatarUrl } from '../../../../lib/avatar';
+import { createTokensForUser } from '../../../../lib/auth';
 import { ErrorCode, errorResponse } from '../../../../lib/response';
 import { toDbDatetime } from '../../../../lib/sanitize';
 import type { Env, DbUser } from '../../../../lib/types';
@@ -46,15 +46,10 @@ export const onRequestPost = apiHandler(async (request, env) => {
     return errorResponse(ErrorCode.RATE_LIMITED, `登录失败次数过多，请 ${remaining} 秒后重试`, 429);
   }
 
-  // Turnstile 验证（仅管理员开启紧急降级时跳过）
-  if (!shouldSkipTurnstile(env.TURNSTILE_SECRET_KEY || '', turnstileConfig?.force_skip_turnstile === 1)) {
-    if (!body.turnstileToken || !body.turnstileToken.trim()) {
-      return errorResponse(ErrorCode.VALIDATION_ERROR, '请完成验证码验证', 400);
-    }
-    const turnstileValid = await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY, getClientIp(request));
-    if (!turnstileValid) {
-      return errorResponse(ErrorCode.TURNSTILE_FAILED, '验证码验证失败，请重试', 400);
-    }
+  // Turnstile 验证（统一封装，含紧急降级开关）
+  const tsRes = await verifyTurnstileForRequest(request, body.turnstileToken, env);
+  if (tsRes) {
+    return errorResponse(tsRes.code, tsRes.message, 400);
   }
 
   // 查找用户（用户名、邮箱或手机号）
@@ -93,22 +88,8 @@ export const onRequestPost = apiHandler(async (request, env) => {
   // 更新最后登录时间
   await env.DB.prepare('UPDATE users SET last_login_at = datetime("now") WHERE id = ?').bind(user.id).run();
 
-  // 生成 Refresh Token
-  const refreshToken = generateToken();
-  const refreshTokenHash = await hashToken(refreshToken);
-  const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
-
-  await env.DB.prepare(
-    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)`
-  ).bind(user.id, refreshTokenHash, expiresAt).run();
-
-  // 生成 Access Token
-  const accessToken = await signAccessToken({
-    userId: user.id,
-    username: user.username,
-    role: user.role,
-  }, env);
+  // 生成双 Token（统一封装）
+  const { accessToken, refreshToken, refreshExpiry } = await createTokensForUser(env, user.id, user.username, user.role);
 
   // 确保 avatar 有值
   const avatar = user.avatar || getAvatarUrl(user.email);

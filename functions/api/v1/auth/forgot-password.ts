@@ -1,6 +1,6 @@
 // functions/api/v1/auth/forgot-password.ts — 忘记密码（发送重置邮件）
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
-import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile';
+import { verifyTurnstileForRequest } from '../../../../lib/turnstile';
 import { sendEmail, buildResetPasswordHtml } from '../../../../lib/email';
 import { generateToken, hashToken } from '../../../../lib/jwt';
 import { sanitizeEmail, toDbDatetime } from '../../../../lib/sanitize';
@@ -16,18 +16,10 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
 
   const email = sanitizeEmail(body.email);
 
-  // Turnstile 验证（仅管理员开启紧急降级时跳过）
-  const turnstileConfig = await env.DB.prepare(
-    'SELECT force_skip_turnstile FROM board_config WHERE id = 1'
-  ).first<{ force_skip_turnstile: number }>();
-  if (!shouldSkipTurnstile(env.TURNSTILE_SECRET_KEY || '', turnstileConfig?.force_skip_turnstile === 1)) {
-    if (!body.turnstileToken || !body.turnstileToken.trim()) {
-      return errorResponse(ErrorCode.VALIDATION_ERROR, '请完成验证码验证', 400);
-    }
-    const valid = await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY, getClientIp(request));
-    if (!valid) {
-      return errorResponse(ErrorCode.TURNSTILE_FAILED, '验证码验证失败', 400);
-    }
+  // Turnstile 验证（统一封装，含紧急降级开关）
+  const tsRes = await verifyTurnstileForRequest(request, body.turnstileToken, env);
+  if (tsRes) {
+    return errorResponse(tsRes.code, tsRes.message, 400);
   }
 
   // IP 频率限制：5分钟3次

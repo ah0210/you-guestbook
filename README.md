@@ -10,7 +10,7 @@
 - 📱 手机号注册/用户管理（UNIQUE 占位符防空值冲突）
 - 🎨 Web Component Widget，Shadow DOM 样式隔离，支持主题自动跟随
 - 📝 秘密留言功能（仅隐藏内容，用户信息正常展示）
-- 🛡️ XSS 防护、PBKDF2 密码加密、Turnstile 验证码（render 模式，无竞态）、连续重复字符检测
+- 🛡️ XSS 防护、PBKDF2 密码加密（60 万次迭代）、Turnstile 验证码（render 模式，无竞态）、连续重复字符检测
 - 📏 留言字数限制（后端 board_config 统一管理）
 - 📊 Naive UI 管理后台（留言审核+来源、用户管理+手机号+删除、系统配置、操作日志）
 - ✉️ Resend 邮件验证（同步调用，免费 100 封/天，国内投递优化提示见下方）
@@ -150,16 +150,21 @@ pnpm run test:widget
 
 ### 6. 初始化管理员
 
-**第一个注册的用户自动成为管理员**，无需独立 setup 步骤。
+注册接口**不再自动提权**。首个管理员必须通过独立的 `/api/v1/auth/setup` 接口创建，且必须提供正确的 `ADMIN_PASSWORD`（在 Cloudflare Dashboard 中以加密变量配置）。仅当系统中**尚不存在任何管理员**时 `/setup` 才会成功。
 
 ```bash
-# 注册第一个用户（自动成为管理员）
-curl -X POST http://localhost:8788/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","email":"admin@example.com","password":"YourSecurePassword123","turnstileToken":"1x00000000000000000000AA"}'
+# 1. 先在 Cloudflare Dashboard / .dev.vars 配置 ADMIN_PASSWORD（强随机值）
+wrangler secret put ADMIN_PASSWORD
 
-# 后续注册的用户为普通用户
+# 2. 调用 /setup 创建首个管理员
+curl -X POST http://localhost:8788/api/v1/auth/setup \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","email":"admin@example.com","password":"YourSecurePassword123","adminPassword":"<ADMIN_PASSWORD>","turnstileToken":"1x00000000000000000000AA"}'
+
+# 后续通过 /register 注册的用户均为普通用户
 ```
+
+> ⚠️ 未配置 `ADMIN_PASSWORD` 时 `/setup` 返回 403，且注册不再产生管理员——全新部署**必须**先配置 `ADMIN_PASSWORD` 再调用 `/setup`。已有管理员的老库不受影响（role 已是 admin）。
 
 本地数据库资源管理器：`http://127.0.0.1:8788/cdn-cgi/explorer/`
 
@@ -188,6 +193,7 @@ pnpm run db:seed:remote
 wrangler secret put JWT_SECRET
 wrangler secret put RESEND_API_KEY
 wrangler secret put TURNSTILE_SECRET_KEY
+wrangler secret put ADMIN_PASSWORD
 ```
 
 ## 线上部署指南
@@ -202,7 +208,7 @@ wrangler secret put TURNSTILE_SECRET_KEY
 5. **D1 绑定**（Settings → Functions → D1 database bindings）：`DB` → `guestbook`
 6. **自定义域名**（Settings → Custom domains）：添加 `guestbook.17you.com`
 7. **初始化数据库**：`pnpm run db:init:remote && pnpm run db:seed:remote`
-8. **创建管理员**：`POST /api/v1/setup`
+8. **创建管理员**：`POST /api/v1/setup`（需先配置 ADMIN_PASSWORD）
 
 ### 后续日常开发流程
 
@@ -224,11 +230,10 @@ Cloudflare 自动构建部署，约 2-3 分钟生效。
 | 配置项 | 值 |
 |--------|-----|
 | 访问地址 | `https://guestbook.17you.com` |
-| 回退域名 | `https://pinglun-9ve.pages.dev` |
 | D1 绑定 | `DB` → `guestbook` |
-| 加密变量 | JWT_SECRET / RESEND_API_KEY / TURNSTILE_SECRET_KEY |
+| 加密变量 | JWT_SECRET / RESEND_API_KEY / TURNSTILE_SECRET_KEY / ADMIN_PASSWORD |
 | 普通变量 | ALLOWED_ORIGINS / EMAIL_DOMAIN / ZHIHU_CLIENT_ID / ZHIHU_CLIENT_SECRET |
-| CORS | `https://www.17you.com,https://guestbook.17you.com` |
+| CORS | `https://www.17you.com,https://guestbook.17you.com`（生产已移除 localhost 与测试域） |
 
 ### 验证清单
 
@@ -266,6 +271,7 @@ curl -I https://guestbook.17you.com/api/v1/messages   # 期望 no-store
 | Turnstile 密钥 | Dashboard 需配置**生产**密钥（非测试密钥 `1x/2x...`） |
 | Resend 域名 | 确认 `17you.com` 已在 Resend 完成 DNS 验证 |
 | JWT_SECRET | Dashboard 加密变量中已配置 |
+| ADMIN_PASSWORD | 初始化管理员闸门，务必使用强随机值；仅通过 Dashboard/.dev.vars 配置，禁止写入 `wrangler.toml` |
 ```
 
 ## 数据库升级
@@ -604,7 +610,7 @@ GuestBoard.unmountAuthBar();
 | GET | `/api/v1/analytics/page?pageId=...` | 无 | 单页浏览量/留言数统计 |
 | GET | `/api/v1/analytics/trending?limit=10&days=30` | 无 | 热门页面排行榜（CDN 缓存 600s） |
 | POST | `/api/v1/analytics/view` | 无 | 访问事件上报 |
-| POST | `/api/v1/setup` | 无 | 初始化管理员 |
+| POST | `/api/v1/setup` | ADMIN_PASSWORD | 初始化首个管理员（仅当系统无管理员时可用） |
 
 ### 管理员 API
 
@@ -640,7 +646,8 @@ you-guestbook/
 │   └── _middleware.ts   → 全局 CORS 预检拦截
 ├── lib/                  → 共享工具库
 │   ├── zhihu.ts          → 知乎 OAuth API（字段兜底）
-│   ├── turnstile.ts      → Turnstile 验证（重试+remoteIp）
+│   ├── turnstile.ts      → Turnstile 统一验证封装（含紧急降级开关）
+│   ├── auth.ts           → Token 签发统一封装（createTokensForUser）
 │   ├── cors.ts           → CORS 中间件
 │   └── middleware.ts     → API 处理器封装
 ├── sql/                  → 数据库脚本
@@ -671,7 +678,7 @@ you-guestbook/
 ## 安全
 
 - JWT_SECRET 使用随机生成的 32+ 字符密钥
-- 密码使用 PBKDF2-SHA256（100000 次迭代）加密，密码长度限制 8-20 字符（防 PBKDF2 DoS）
+- 密码使用 PBKDF2-SHA256（600000 次迭代，OWASP 2023 建议下限）加密，密码长度限制 8-64 字符（防 PBKDF2 DoS；老哈希按存储的迭代次数自动校验，无需重置）
 - Refresh Token 存储在 HttpOnly Cookie（SameSite=None; Secure）
 - 所有用户输入入库前 HTML 转义
 - CORS 仅允许配置的域名
@@ -682,6 +689,14 @@ you-guestbook/
 - 邮箱验证前后端双重拦截留言，管理员豁免
 - 登录频率限制基于 D1 数据库（IP + 用户名双维度），解决 Serverless 内存隔离问题
 - 最后管理员保护（禁止降级最后一个管理员的角色）
+- 首用户提权改为独立 `/setup` 接口 + `ADMIN_PASSWORD` 闸门，注册接口不再自动产生管理员
+- 用户名统一小写存储，避免大小写导致的"登录锁"
+- 显示名称（displayName）严格校验，含非法字符（空格/点/emoji 等）直接拒绝，不再静默清洗
+- 注册接口用户枚举模糊化：用户名/邮箱/手机号是否已被占用均返回统一提示，防账户枚举
+- 高危管理员操作（删除用户、变更角色/状态、更新系统配置）使用 DB 实时角色复核（`requireAdminFresh`），防止 JWT 角色快照滞后
+- 定时任务清理过期邮箱验证码、密码重置 Token 与已吊销 Refresh Token
+- Turnstile 验证统一封装（`verifyTurnstileForRequest`），登录/注册/找回密码共用并支持紧急降级
+- Token 签发统一封装（`createTokensForUser`），登录/注册/刷新/setup 共用
 - API 响应不泄露用户邮箱（`toPublicUser` 已移除 email 字段）
 - 用户数据端点使用 `private` Cache-Control（防 CDN 缓存敏感数据）
 - 留言列表端点使用 `no-store` Cache-Control（防 CDN 缓存投毒）
@@ -820,13 +835,13 @@ pnpm run test:widget
 #### 1. 密码长度限制（防 PBKDF2 DoS）
 
 ```bash
-# 超长密码应被拒绝（> 20 字符）
+# 超长密码应被拒绝（> 64 字符）
 curl -X POST http://localhost:8788/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"dosuser","email":"dos@test.com","password":"AAAAAAAAAABBBBBBBBBB1","turnstileToken":"1x00000000000000000000AA"}'
-# 期望：400 错误，提示密码不能超过 20 个字符
+# 期望：400 错误，提示密码不能超过 64 个字符
 
-# 边界：恰好 20 字符应通过
+# 边界：恰好 64 字符应通过
 curl -X POST http://localhost:8788/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"boundaryuser","email":"boundary@test.com","password":"AAAAAAAAAABBBBBBBBB1","turnstileToken":"1x00000000000000000000AA"}'

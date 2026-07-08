@@ -1,7 +1,7 @@
 // functions/api/v1/auth/me.ts — 当前用户信息 / 修改资料
 import { apiHandler } from '../../../../lib/middleware';
 import { getAvatarUrl } from '../../../../lib/avatar';
-import { escapeHtml, sanitizeUsername } from '../../../../lib/sanitize';
+import { escapeHtml, validateDisplayName } from '../../../../lib/sanitize';
 import { successResponse, errorResponse, ErrorCode } from '../../../../lib/response';
 import type { DbUser } from '../../../../lib/types';
 
@@ -34,9 +34,12 @@ export const onRequestPatch = apiHandler(async (request, env, ctx, user) => {
   const values: unknown[] = [];
 
   if (body.displayName !== undefined) {
-    const displayName = sanitizeUsername(body.displayName);
+    const displayNameErr = validateDisplayName(body.displayName);
+    if (displayNameErr) {
+      return errorResponse(ErrorCode.VALIDATION_ERROR, displayNameErr, 400);
+    }
     updates.push('display_name = ?');
-    values.push(displayName);
+    values.push(body.displayName.trim());
   }
 
   if (body.bio !== undefined) {

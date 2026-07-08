@@ -2,7 +2,8 @@
 
 import { MAX_PASSWORD_LENGTH } from './sanitize';
 
-const ITERATIONS = 100000;
+// OWASP 2023 对 PBKDF2-HMAC-SHA256 的建议下限为 600,000 次
+const ITERATIONS = 600000;
 const HASH_ALGO = 'SHA-256';
 const SALT_LENGTH = 16;
 const KEY_LENGTH = 256;

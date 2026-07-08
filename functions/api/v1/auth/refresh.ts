@@ -1,6 +1,7 @@
 // functions/api/v1/auth/refresh.ts — 刷新 Access Token（Token Rotation）
 import { apiHandler, getRefreshTokenFromCookie } from '../../../../lib/middleware';
-import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry, verifyAccessToken } from '../../../../lib/jwt';
+import { verifyAccessToken } from '../../../../lib/jwt';
+import { createTokensForUser } from '../../../../lib/auth';
 import { ErrorCode, errorResponse } from '../../../../lib/response';
 import { toDbDatetime } from '../../../../lib/sanitize';
 import type { Env, DbUser, DbRefreshToken, JwtPayload } from '../../../../lib/types';
@@ -51,27 +52,18 @@ export const onRequestPost = apiHandler(async (request, env) => {
     'UPDATE refresh_tokens SET revoked_at = datetime("now") WHERE id = ?'
   ).bind(storedToken.id).run();
 
-  // 生成新 Refresh Token
-  const newRefreshToken = generateToken();
-  const newTokenHash = await hashToken(newRefreshToken);
-  const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
-
-  await env.DB.prepare(
-    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)`
-  ).bind(storedToken.user_id, newTokenHash, expiresAt).run();
+  // 生成新 Token 对（Access + Refresh）
+  const { accessToken, refreshToken: newRefreshToken, refreshExpiry } = await createTokensForUser(
+    env,
+    storedToken.user_id,
+    storedToken.username,
+    storedToken.role
+  );
 
   // 顺手清理过期和已吊销超过 30 天的 Token
   await env.DB.prepare(
     "DELETE FROM refresh_tokens WHERE (expires_at < datetime('now')) OR (revoked_at IS NOT NULL AND revoked_at < datetime('now', '-30 days'))"
   ).run();
-
-  // 生成新 Access Token
-  const accessToken = await signAccessToken({
-    userId: storedToken.user_id,
-    username: storedToken.username,
-    role: storedToken.role,
-  }, env);
 
   return new Response(JSON.stringify({
     success: true,

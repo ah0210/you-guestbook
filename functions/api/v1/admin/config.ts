@@ -111,4 +111,4 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
   );
 
   return successResponse({ message: '配置已更新' });
-}, { requireAdmin: true });
+}, { requireAdminFresh: true });

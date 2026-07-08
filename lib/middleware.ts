@@ -34,6 +34,23 @@ export async function requireAdmin(request: Request, env: Env): Promise<{ user: 
   return result;
 }
 
+/**
+ * 要求管理员角色，并从数据库实时复核
+ * 防止 JWT 中 role 快照滞后于管理员的降级/封禁操作（访问控制更严格的高危操作使用）
+ */
+export async function requireAdminFresh(request: Request, env: Env): Promise<{ user: JwtPayload } | Response> {
+  const result = await authenticate(request, env);
+  if (result instanceof Response) return result;
+
+  const dbUser = await env.DB.prepare('SELECT role, status FROM users WHERE id = ?')
+    .bind(result.user.userId).first<{ role: string; status: string }>();
+  if (!dbUser || dbUser.status !== 'active' || dbUser.role !== 'admin') {
+    return errorResponse(ErrorCode.FORBIDDEN, '需要管理员权限', 403);
+  }
+
+  return result;
+}
+
 /** 从请求中获取客户端 IP */
 export function getClientIp(request: Request): string {
   return request.headers.get('CF-Connecting-IP') ||
@@ -51,7 +68,7 @@ export function getRefreshTokenFromCookie(request: Request): string | null {
 /** 通用 API 处理器封装 — 自动处理 CORS、预检、错误 */
 export function apiHandler(
   handler: (request: Request, env: Env, ctx: EventContext<Env, any, Record<string, unknown>>, user?: JwtPayload) => Promise<Response>,
-  options?: { requireAuth?: boolean; requireAdmin?: boolean }
+  options?: { requireAuth?: boolean; requireAdmin?: boolean; requireAdminFresh?: boolean }
 ): PagesFunctionEnv {
   return async (context) => {
     const { request, env } = context;
@@ -63,7 +80,11 @@ export function apiHandler(
     try {
       let user: JwtPayload | undefined;
 
-      if (options?.requireAdmin) {
+      if (options?.requireAdminFresh) {
+        const result = await requireAdminFresh(request, env);
+        if (result instanceof Response) return withCors(result, request, env);
+        user = result.user;
+      } else if (options?.requireAdmin) {
         const result = await requireAdmin(request, env);
         if (result instanceof Response) return withCors(result, request, env);
         user = result.user;

@@ -64,7 +64,7 @@ export const onRequestPatch = apiHandler(async (request, env, ctx, user) => {
   );
 
   return successResponse({ id, role: body.role || dbUser.role, status: body.status || dbUser.status });
-}, { requireAdmin: true });
+}, { requireAdminFresh: true });
 
 /**
  * 删除非管理员用户
@@ -113,4 +113,4 @@ export const onRequestDelete = apiHandler(async (request, env, ctx, user) => {
   );
 
   return successResponse({ id, message: '用户已删除' });
-}, { requireAdmin: true });
+}, { requireAdminFresh: true });

@@ -1,12 +1,13 @@
 // functions/api/v1/auth/register.ts — 用户注册
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { hashPassword } from '../../../../lib/crypto';
-import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile';
+import { verifyTurnstileForRequest } from '../../../../lib/turnstile';
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';
-import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from '../../../../lib/jwt';
+import { createTokensForUser } from '../../../../lib/auth';
 import { getAvatarUrl } from '../../../../lib/avatar';
-import { escapeHtml, sanitizeUsername, sanitizeEmail, validatePasswordStrength, validateEmail, validatePhone, toDbDatetime } from '../../../../lib/sanitize';
-import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
+import { generateToken, hashToken } from '../../../../lib/jwt';
+import { sanitizeUsername, sanitizeEmail, validatePasswordStrength, validateEmail, validatePhone, toDbDatetime } from '../../../../lib/sanitize';
+import { ErrorCode, errorResponse } from '../../../../lib/response';
 import type { Env, DbUser } from '../../../../lib/types';
 
 export const onRequestPost = apiHandler(async (request, env, ctx) => {
@@ -23,18 +24,10 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
     return errorResponse(ErrorCode.VALIDATION_ERROR, '请填写所有必填字段', 400);
   }
 
-  // Turnstile 验证（仅管理员开启紧急降级时跳过）
-  const turnstileConfig = await env.DB.prepare(
-    'SELECT force_skip_turnstile FROM board_config WHERE id = 1'
-  ).first<{ force_skip_turnstile: number }>();
-  if (!shouldSkipTurnstile(env.TURNSTILE_SECRET_KEY || '', turnstileConfig?.force_skip_turnstile === 1)) {
-    if (!body.turnstileToken || !body.turnstileToken.trim()) {
-      return errorResponse(ErrorCode.VALIDATION_ERROR, '请完成验证码验证', 400);
-    }
-    const turnstileValid = await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY, getClientIp(request));
-    if (!turnstileValid) {
-      return errorResponse(ErrorCode.TURNSTILE_FAILED, '验证码验证失败，请重试', 400);
-    }
+  // Turnstile 验证（统一封装，含紧急降级开关）
+  const tsRes = await verifyTurnstileForRequest(request, body.turnstileToken, env);
+  if (tsRes) {
+    return errorResponse(tsRes.code, tsRes.message, 400);
   }
 
   // IP 频率限制检查（10分钟内最多3次）
@@ -53,7 +46,8 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
     'INSERT INTO register_attempts (ip_address) VALUES (?)'
   ).bind(clientIp).run();
 
-  const username = sanitizeUsername(body.username);
+  // 用户名统一小写化，避免注册/登录大小写不一致导致无法登录
+  const username = sanitizeUsername(body.username).toLowerCase();
   const email = sanitizeEmail(body.email);
   const phone = body.phone.trim();
   const password = body.password;
@@ -87,15 +81,15 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
     return errorResponse(ErrorCode.REGISTRATION_DISABLED, '注册功能已关闭', 403);
   }
 
-  // 检查用户名/邮箱/手机号是否已存在
+  // 查重（模糊提示，防用户枚举）
   const existing = await env.DB.prepare(
     'SELECT id FROM users WHERE username = ? OR email = ? OR phone = ?'
   ).bind(username, email, phone).first();
   if (existing) {
-    return errorResponse(ErrorCode.USERNAME_TAKEN, '用户名、邮箱或手机号已被注册', 409);
+    return errorResponse(ErrorCode.USERNAME_TAKEN, '注册失败，用户名、邮箱或手机号可能已被占用，请更换后重试', 409);
   }
 
-  // 创建用户
+  // 创建用户（角色始终为普通用户；首个管理员通过 /setup 初始化）
   const passwordHash = await hashPassword(password);
   const avatar = getAvatarUrl(email);
 
@@ -105,32 +99,8 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
 
   const userId = result.meta.last_row_id as number;
 
-  // 检查是否是第一个用户——如果是则自动升级为管理员（免去 setup 步骤）
-  const userCount = await env.DB.prepare(
-    'SELECT COUNT(*) as count FROM users'
-  ).first<{ count: number }>();
-  const isFirstUser = userCount && userCount.count === 1;
-  let role = 'user';
-
-  if (isFirstUser) {
-    role = 'admin';
-    await env.DB.prepare(
-      "UPDATE users SET role = 'admin', email_verified = 1 WHERE id = ?"
-    ).bind(userId).run();
-  }
-
-  // 生成 Refresh Token
-  const refreshToken = generateToken();
-  const refreshTokenHash = await hashToken(refreshToken);
-  const refreshExpiry = getRefreshTokenExpiry();
-  const expiresAt = toDbDatetime(new Date(Date.now() + refreshExpiry * 1000));
-
-  await env.DB.prepare(
-    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)`
-  ).bind(userId, refreshTokenHash, expiresAt).run();
-
-  // 生成 Access Token
-  const accessToken = await signAccessToken({ userId, username, role }, env);
+  // 生成双 Token（统一封装）
+  const { accessToken, refreshToken, refreshExpiry } = await createTokensForUser(env, userId, username, 'user');
 
   // 创建邮箱验证 token
   const verifyToken = generateToken();
@@ -143,7 +113,6 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
   // 发送验证邮件（异步，不阻塞响应）
   const verifyUrl = `${env.PUBLIC_URL}/api/v1/auth/verify-email?token=${verifyToken}`;
   const html = buildVerifyEmailHtml(username, verifyUrl);
-  // 不 await — 邮件发送失败不影响注册，但使用 waitUntil 确保 Worker 不提前销毁
   ctx.waitUntil(sendEmail({ to: email, subject: '请验证您的邮箱', html }, env).catch(() => {}));
 
   // 获取完整用户信息
@@ -161,7 +130,7 @@ export const onRequestPost = apiHandler(async (request, env, ctx) => {
         phone: user!.phone,
         emailVerified: user!.email_verified === 1,
         avatar: user!.avatar,
-        role,
+        role: 'user',
       },
     },
   }), {

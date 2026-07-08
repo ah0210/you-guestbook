@@ -1,7 +1,7 @@
 // lib/sanitize.ts — XSS 防护（HTML 转义 + 用户名清理）
 
 /** 密码最大长度（与 crypto.ts 共享，防止哈希截断与验证长度不一致） */
-export const MAX_PASSWORD_LENGTH = 20;
+export const MAX_PASSWORD_LENGTH = 64;
 
 export function escapeHtml(str: string): string {
   return str
@@ -40,9 +40,25 @@ export function validateEmail(email: string): string | null {
   if (trimmed.length > 254) {
     return '邮箱地址过长';
   }
-  // RFC 5322 简化版：要求 @ 前后均有内容，域名至少一个点
+  // RFC 5322 简化版：要求 @ 前后均有内容，域名至少一个点（TLD ≥ 2）
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) {
     return '邮箱格式不正确';
+  }
+  return null;
+}
+
+/**
+ * 显示名称（昵称）校验：仅允许中英文、数字、下划线
+ * 拒绝空格、点、emoji、特殊字符等，返回错误文本或 null
+ * 采用「校验拒绝」而非「静默清洗」，避免用户数据被无感知篡改
+ */
+export function validateDisplayName(name: string): string | null {
+  const trimmed = (name || '').trim();
+  if (trimmed.length < 1 || trimmed.length > 30) {
+    return '昵称长度需在 1-30 之间';
+  }
+  if (!/^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/.test(trimmed)) {
+    return '昵称仅支持中英文、数字、下划线，不能包含空格或特殊字符';
   }
   return null;
 }
@@ -83,4 +99,3 @@ export function safeRedirectUrl(redirect: string, publicUrl: string): string {
   }
   return publicUrl;
 }
-

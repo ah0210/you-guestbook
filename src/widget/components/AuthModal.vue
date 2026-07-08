@@ -13,7 +13,7 @@
           </div>
           <div class="gb-field">
             <label class="gb-label" :for="`${instanceId}-password`">密码</label>
-            <input v-model="form.password" class="gb-input" type="password" required autocomplete="current-password" :id="`${instanceId}-password`" />
+            <input v-model="form.password" class="gb-input" type="password" required maxlength="64" autocomplete="current-password" :id="`${instanceId}-password`" />
           </div>
           <div v-if="error" class="gb-error">{{ error }}</div>
           <button class="gb-btn gb-btn-primary gb-btn-block" type="submit" :disabled="auth.loading.value">
@@ -42,7 +42,7 @@
           </div>
           <div class="gb-field-row">
             <label class="gb-label" :for="`${instanceId}-reg-password`">密码</label>
-            <input v-model="form.password" class="gb-input" type="password" required minlength="8" autocomplete="new-password" :id="`${instanceId}-reg-password`" placeholder="8-20位，含字母和数字" />
+            <input v-model="form.password" class="gb-input" type="password" required minlength="8" maxlength="64" autocomplete="new-password" :id="`${instanceId}-reg-password`" placeholder="8-64位，含字母和数字" />
           </div>
           <div class="gb-field-row">
             <label class="gb-label" :for="`${instanceId}-confirm-password`">确认密码</label>
@@ -82,7 +82,7 @@
           <h3 class="gb-modal-title">重置密码</h3>
           <div class="gb-field">
             <label class="gb-label" :for="`${instanceId}-new-password`">新密码</label>
-            <input v-model="form.newPassword" class="gb-input" type="password" required minlength="8" autocomplete="new-password" :id="`${instanceId}-new-password`" />
+            <input v-model="form.newPassword" class="gb-input" type="password" required minlength="8" maxlength="64" autocomplete="new-password" :id="`${instanceId}-new-password`" />
             <div class="gb-hint">至少 8 个字符，需包含字母和数字</div>
           </div>
           <div class="gb-field">
@@ -121,7 +121,7 @@
           </div>
           <div class="gb-field">
             <label class="gb-label" :for="`${instanceId}-ch-new-password`">新密码</label>
-            <input v-model="form.newPassword" class="gb-input" type="password" required minlength="8" autocomplete="new-password" :id="`${instanceId}-ch-new-password`" />
+            <input v-model="form.newPassword" class="gb-input" type="password" required minlength="8" maxlength="64" autocomplete="new-password" :id="`${instanceId}-ch-new-password`" />
             <div class="gb-hint">至少 8 个字符，需包含字母和数字</div>
           </div>
           <div class="gb-field">

@@ -4,9 +4,9 @@ import { verifyPassword } from '../../../../lib/crypto';
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';
 import { generateToken, hashToken } from '../../../../lib/jwt';
 import { getAvatarUrl } from '../../../../lib/avatar';
-import { sanitizeEmail, toDbDatetime } from '../../../../lib/sanitize';
+import { sanitizeEmail, validateEmail, toDbDatetime } from '../../../../lib/sanitize';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
-import type { Env, DbUser, JwtPayload } from '../../../../lib/types';
+import type { Env, DbUser } from '../../../../lib/types';
 
 export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
   const body = await request.json() as { newEmail?: string; currentPassword?: string };
@@ -17,9 +17,10 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
 
   const newEmail = sanitizeEmail(body.newEmail);
 
-  // 验证邮箱格式
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-    return errorResponse(ErrorCode.VALIDATION_ERROR, '邮箱格式不正确', 400);
+  // 验证邮箱格式（复用统一校验，避免与其他路径规则不一致）
+  const emailErr = validateEmail(newEmail);
+  if (emailErr) {
+    return errorResponse(ErrorCode.VALIDATION_ERROR, emailErr, 400);
   }
 
   // 获取当前用户
@@ -43,7 +44,8 @@ export const onRequestPost = apiHandler(async (request, env, ctx, user) => {
       'SELECT id FROM users WHERE email = ? AND id != ?'
     ).bind(newEmail, user!.userId).first();
     if (existing) {
-      return errorResponse(ErrorCode.EMAIL_TAKEN, '该邮箱已被其他账号使用', 409);
+      // 模糊提示，避免邮箱枚举
+      return errorResponse(ErrorCode.EMAIL_TAKEN, '该邮箱不可用，请更换后重试', 409);
     }
   } else {
     return errorResponse(ErrorCode.VALIDATION_ERROR, '新邮箱不能与当前邮箱相同', 400);
