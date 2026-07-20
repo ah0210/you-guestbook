@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/pages.ts — 页面表现列表（支持时间段筛选）
+﻿// functions/api/v1/admin/analytics/pages.ts — 页面表现列表（支持时间段筛选）
 import { apiHandler } from '../../../../../lib/middleware';
 import { paginatedResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

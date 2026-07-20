@@ -1,4 +1,4 @@
-// functions/api/v1/auth/change-email.ts — 修改邮箱
+﻿// functions/api/v1/auth/change-email.ts — 修改邮箱
 import { apiHandler } from '../../../../lib/middleware';
 import { verifyPassword } from '../../../../lib/crypto';
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';

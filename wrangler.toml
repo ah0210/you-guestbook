@@ -7,16 +7,17 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "guestbook"
-database_id = "bb73bd88-95f9-4c4f-af08-871df6bf3286"
+database_id = "<YOUR_D1_DATABASE_ID>"  # 在 Cloudflare Dashboard 创建 D1 数据库后填入实际 UUID
 
 # 非敏感环境变量
 [vars]
-PUBLIC_URL = "https://guestbook.17you.com"
-SITE_NAME = "自游人留言板"
-ALLOWED_ORIGINS = "https://www.17you.com,https://guestbook.17you.com"
-EMAIL_DOMAIN = "17you.com"
-EMAIL_FROM_NAME = "自游人 17you.com"
-TURNSTILE_SITE_KEY = "0x4AAAAAADKEiieQVd99LXKI"
+PUBLIC_URL = "https://guestbook.your-domain.com"
+SITE_NAME = "Guestbook"
+ALLOWED_ORIGINS = "https://www.your-domain.com,https://guestbook.your-domain.com"
+EMAIL_DOMAIN = "your-domain.com"
+EMAIL_FROM_NAME = "Guestbook"
+# Cloudflare Turnstile 测试站点密钥（本地开发可直接用）；生产请在 Dashboard 配置你的真实站点密钥
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
 
 # Cron Triggers 需在 Cloudflare Dashboard 中手动配置
 # Settings → Functions → Cron triggers → 0 0 * * *

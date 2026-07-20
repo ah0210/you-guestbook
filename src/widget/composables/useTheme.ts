@@ -1,4 +1,4 @@
-// src/widget/composables/useTheme.ts — 主题自动跟随（prefers-color-scheme）
+﻿// src/widget/composables/useTheme.ts — 主题自动跟随（prefers-color-scheme）
 
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 

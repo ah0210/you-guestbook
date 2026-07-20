@@ -1,4 +1,4 @@
-// functions/api/v1/auth/logout.ts — 登出（吊销 Refresh Token）
+﻿// functions/api/v1/auth/logout.ts — 登出（吊销 Refresh Token）
 import { apiHandler, getRefreshTokenFromCookie, authenticate } from '../../../../lib/middleware';
 import { hashToken } from '../../../../lib/jwt';
 import { successResponse, errorResponse, ErrorCode } from '../../../../lib/response';

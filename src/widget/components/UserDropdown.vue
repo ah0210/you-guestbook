@@ -1,4 +1,4 @@
-<!-- src/widget/components/UserDropdown.vue — 用户下拉菜单（留言板内 + 导航栏共用） -->
+﻿<!-- src/widget/components/UserDropdown.vue — 用户下拉菜单（留言板内 + 导航栏共用） -->
 <template>
   <div class="gb-dropdown" ref="dropdownRef">
     <div class="gb-dropdown-trigger" @click="toggle">

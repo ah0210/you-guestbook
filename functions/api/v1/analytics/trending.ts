@@ -12,21 +12,21 @@ const SORT_COLUMNS: Record<string, string> = {
 
 /**
  * 清洗页面标题，去掉站点后缀
- * 例如 "文章标题 - 自游人（一起游） - 专注AI旅行与赚钱技术的自由行社区 17you.com"
- * → "文章标题"
+ * 例如 "文章标题 - Guestbook" → "文章标题"
  *
- * 策略：从右向左逐段去掉 " - xxx"，直到遇到非站点名段
- * 站点名特征：包含 "自游人"、"一起游"、"17you"、"社区" 等关键词
+ * 策略：从右向左逐段去掉末尾 " - <站点名>" 段，直到遇到非站点名段。
+ * 站点名取自环境变量 SITE_NAME，对任意部署者自动生效（在 wrangler.toml / .dev.vars 中配置）。
  */
-function cleanTitle(title: string): string {
+function cleanTitle(title: string, siteName: string): string {
   if (!title) return '';
+  const site = (siteName || '').trim();
+  if (!site) return title.trim();
   let cleaned = title.trim();
-  // 反复去掉右侧的站点名后缀段
+  // 反复去掉末尾的 " - <站点名>" 段
   while (cleaned.includes(' - ')) {
     const lastDash = cleaned.lastIndexOf(' - ');
     const suffix = cleaned.slice(lastDash + 3).trim();
-    // 判断后缀是否是站点名（包含特征关键词）
-    if (/(自游人|一起游|17you|专注.*社区|自由行社区)/i.test(suffix)) {
+    if (suffix === site) {
       cleaned = cleaned.slice(0, lastDash).trim();
     } else {
       break;
@@ -70,7 +70,7 @@ export const onRequestGet = apiHandler(async (request, env) => {
     .filter(row => row.pageUrl || row.canonicalUrl)
     .map(row => ({
       pageId: row.pageId,
-      pageTitle: cleanTitle(row.pageTitle || ''),
+      pageTitle: cleanTitle(row.pageTitle || '', env.SITE_NAME || ''),
       pageUrl: row.canonicalUrl || row.pageUrl,
       views: row.views || 0,
       visitors: row.visitors || 0,

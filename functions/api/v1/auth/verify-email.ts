@@ -1,4 +1,4 @@
-// functions/api/v1/auth/verify-email.ts — 邮箱验证确认
+﻿// functions/api/v1/auth/verify-email.ts — 邮箱验证确认
 import { apiHandler } from '../../../../lib/middleware';
 import { hashToken } from '../../../../lib/jwt';
 import { successResponse, errorResponse, ErrorCode } from '../../../../lib/response';

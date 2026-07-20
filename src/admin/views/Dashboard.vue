@@ -1,4 +1,4 @@
-<!-- src/admin/views/Dashboard.vue — 数据概览面板 -->
+﻿<!-- src/admin/views/Dashboard.vue — 数据概览面板 -->
 <template>
   <div>
     <n-h2>数据概览</n-h2>

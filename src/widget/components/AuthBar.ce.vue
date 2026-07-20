@@ -1,4 +1,4 @@
-<!-- src/widget/components/AuthBar.ce.vue — 导航栏认证栏 Web Component -->
+﻿<!-- src/widget/components/AuthBar.ce.vue — 导航栏认证栏 Web Component -->
 <template>
   <div class="gb-authbar">
     <!-- 未登录 -->

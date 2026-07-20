@@ -1,4 +1,4 @@
-// functions/api/v1/auth/change-password.ts — 修改密码
+﻿// functions/api/v1/auth/change-password.ts — 修改密码
 import { apiHandler } from '../../../../lib/middleware';
 import { verifyPassword, hashPassword } from '../../../../lib/crypto';
 import { validatePasswordStrength } from '../../../../lib/sanitize';

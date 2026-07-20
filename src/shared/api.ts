@@ -1,4 +1,4 @@
-// src/shared/api.ts — API 请求封装（含双 Token 自动刷新）
+﻿// src/shared/api.ts — API 请求封装（含双 Token 自动刷新）
 
 import type { ApiResponse, PaginatedResponse, PublicUser } from './types';
 

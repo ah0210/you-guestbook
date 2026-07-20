@@ -1,4 +1,4 @@
-// functions/api/v1/messages/[id].ts — 单条留言详情
+﻿// functions/api/v1/messages/[id].ts — 单条留言详情
 import { apiHandler } from '../../../../lib/middleware';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';
 import { noCacheHeaders } from '../../../../lib/cache-headers';

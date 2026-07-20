@@ -1,11 +1,11 @@
-<!-- src/admin/components/AdminLayout.vue — 管理后台布局 -->
+﻿<!-- src/admin/components/AdminLayout.vue — 管理后台布局 -->
 <template>
   <n-message-provider>
     <n-dialog-provider>
       <n-layout has-sider style="height: 100vh">
         <n-layout-sider bordered :width="220" :collapsed-width="64" collapse-mode="width" :collapsed="collapsed" show-trigger @collapse="collapsed = true" @expand="collapsed = false">
           <div style="padding: 16px; font-weight: 600; font-size: 16px; text-align: center; border-bottom: 1px solid var(--n-border-color)">
-            <span v-if="!collapsed">自游人留言板</span>
+            <span v-if="!collapsed">Guestbook</span>
             <span v-else>留言板</span>
           </div>
           <n-menu :options="menuOptions" :value="currentRoute" @update:value="handleMenuSelect" :collapsed="collapsed" :collapsed-width="64" :collapsed-icon-size="22" />

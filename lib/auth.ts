@@ -1,4 +1,4 @@
-// lib/auth.ts — 统一签发 Access / Refresh Token（消除 login/register/refresh/setup 中的重复逻辑）
+﻿// lib/auth.ts — 统一签发 Access / Refresh Token（消除 login/register/refresh/setup 中的重复逻辑）
 
 import { signAccessToken, generateToken, hashToken, getRefreshTokenExpiry } from './jwt';
 import { toDbDatetime } from './sanitize';

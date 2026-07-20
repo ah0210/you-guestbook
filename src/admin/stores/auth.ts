@@ -1,4 +1,4 @@
-// src/admin/stores/auth.ts — Pinia 认证状态管理
+﻿// src/admin/stores/auth.ts — Pinia 认证状态管理
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { ApiResponse, PublicUser } from '../../shared/types';

@@ -1,4 +1,4 @@
-// functions/api/v1/config.ts — 留言板公开配置
+﻿// functions/api/v1/config.ts — 留言板公开配置
 import { apiHandler } from '../../../lib/middleware';
 import { successResponse } from '../../../lib/response';
 import { noCacheHeaders } from '../../../lib/cache-headers';

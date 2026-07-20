@@ -1,4 +1,4 @@
-import { isAllowedOrigin } from './cors';
+﻿import { isAllowedOrigin } from './cors';
 import { getClientIp } from './middleware';
 import type { Env } from './types';
 

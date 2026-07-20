@@ -1,4 +1,4 @@
-// src/widget/entry.ts — Widget Web Component 入口 + 全局 API
+﻿// src/widget/entry.ts — Widget Web Component 入口 + 全局 API
 import { defineCustomElement, watch } from 'vue';
 import GuestBoard from './components/GuestBoard.ce.vue';
 import AuthBar from './components/AuthBar.ce.vue';

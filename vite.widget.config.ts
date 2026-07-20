@@ -1,4 +1,4 @@
-// vite.widget.config.ts — Widget Web Component 构建
+﻿// vite.widget.config.ts — Widget Web Component 构建
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 

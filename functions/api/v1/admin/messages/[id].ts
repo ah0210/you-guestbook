@@ -1,4 +1,4 @@
-// functions/api/v1/admin/messages/[id].ts — 审核/删除留言 + 批量删除
+﻿// functions/api/v1/admin/messages/[id].ts — 审核/删除留言 + 批量删除
 import { apiHandler, getClientIp } from '../../../../../lib/middleware';
 import { logAdminAction } from '../../../../../lib/admin-log';
 import { ErrorCode, errorResponse, successResponse } from '../../../../../lib/response';

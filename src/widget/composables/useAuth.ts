@@ -1,4 +1,4 @@
-// src/widget/composables/useAuth.ts — 认证状态管理（模块级单例）
+﻿// src/widget/composables/useAuth.ts — 认证状态管理（模块级单例）
 
 import { ref, computed } from 'vue';
 import { apiPost, apiGet, apiPatch, setAccessToken, getAccessToken, clearAuth } from '../../shared/api';
@@ -206,12 +206,6 @@ export function useAuth() {
     }
   }
 
-  /** 跳转知乎 OAuth 授权页 */
-  function loginWithZhihu() {
-    if (!_apiBase) return;
-    window.location.href = `${_apiBase}/auth/zhihu`;
-  }
-
   /** 处理 OAuth 回调（从 URL fragment 中提取 access_token） */
   async function handleOAuthCallback(): Promise<boolean> {
     const hash = window.location.hash;
@@ -268,7 +262,6 @@ export function useAuth() {
     changePassword,
     changeEmail,
     resendVerification,
-    loginWithZhihu,
     handleOAuthCallback,
   };
 }

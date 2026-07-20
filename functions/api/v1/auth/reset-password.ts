@@ -1,4 +1,4 @@
-// functions/api/v1/auth/reset-password.ts — 重置密码（通过邮件 token）
+﻿// functions/api/v1/auth/reset-password.ts — 重置密码（通过邮件 token）
 import { apiHandler } from '../../../../lib/middleware';
 import { hashPassword } from '../../../../lib/crypto';
 import { hashToken } from '../../../../lib/jwt';

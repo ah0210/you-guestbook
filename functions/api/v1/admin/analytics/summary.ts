@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/summary.ts — 流量统计概览
+﻿// functions/api/v1/admin/analytics/summary.ts — 流量统计概览
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

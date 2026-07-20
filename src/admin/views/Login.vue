@@ -1,7 +1,7 @@
-<!-- src/admin/views/Login.vue — 管理员登录页 -->
+﻿<!-- src/admin/views/Login.vue — 管理员登录页 -->
 <template>
   <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f2f5;">
-    <n-card title="自游人留言板 — 管理后台" style="width: 400px;">
+    <n-card title="Guestbook — 管理后台" style="width: 400px;">
       <n-form ref="formRef" :model="form" :rules="rules" @submit.prevent="handleLogin">
         <n-form-item label="用户名或邮箱" path="login">
           <n-input v-model:value="form.login" placeholder="请输入用户名或邮箱" />

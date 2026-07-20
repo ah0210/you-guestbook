@@ -1,4 +1,4 @@
-// vite.admin.config.ts — 管理后台 SPA 构建
+﻿// vite.admin.config.ts — 管理后台 SPA 构建
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 

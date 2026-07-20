@@ -1,11 +1,11 @@
-# Hugo 配置示例 — 留言板参数
+﻿# Hugo 配置示例 — 留言板参数
 # 将以下内容添加到你的 Hugo config.toml
 
-# ===== 自游人留言板参数 =====
+# ===== Guestbook参数 =====
 [params.guestbook]
   enable = true
-  apiBase = "https://guestbook.17you.com"           # 留言板服务地址（自动补全 /api/v1）
-  siteKey = "0x4AAAAAADKEiieQVd99LXKI"              # Turnstile Site Key
+  apiBase = "https://guestbook.your-domain.com"           # 留言板服务地址（自动补全 /api/v1）
+  siteKey = "1x00000000000000000000AA"              # Turnstile Site Key
   theme = "auto"                                     # "light" | "dark" | "auto"
   countFormat = "{count} 条留言"                      # 列表页留言数量显示格式
   commentCount = true                                # 内容页文章元信息区显示评论数

@@ -1,4 +1,4 @@
-// lib/cache-headers.ts — HTTP 缓存头封装
+﻿// lib/cache-headers.ts — HTTP 缓存头封装
 
 /** 公开资源缓存（仅用于不含用户隐私数据的公开接口） */
 export function cacheHeaders(seconds: number): Record<string, string> {

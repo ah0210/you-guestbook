@@ -1,5 +1,5 @@
--- ============================================
--- 自游人留言板 完整 Schema (D1 / SQLite) v1.0.0
+﻿-- ============================================
+-- Guestbook 完整 Schema (D1 / SQLite) v1.0.0
 -- 包含所有表结构、字段和索引
 -- 新部署只需执行此文件 + 002_seed.sql
 -- ============================================
@@ -250,16 +250,6 @@ CREATE INDEX IF NOT EXISTS idx_analytics_page_daily_date ON analytics_page_daily
 CREATE INDEX IF NOT EXISTS idx_analytics_page_daily_views ON analytics_page_daily(date, views DESC);
 CREATE INDEX IF NOT EXISTS idx_analytics_page_totals_views ON analytics_page_totals(views DESC);
 CREATE INDEX IF NOT EXISTS idx_analytics_page_totals_updated ON analytics_page_totals(updated_at DESC);
-
--- Zhihu OAuth 换码表
-CREATE TABLE IF NOT EXISTS oauth_auth_codes (
-  code       TEXT PRIMARY KEY,
-  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  expires_at TEXT NOT NULL,
-  created_at TEXT DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_expires ON oauth_auth_codes(expires_at);
 
 -- 注册尝试记录表（用于IP频率限制）
 CREATE TABLE IF NOT EXISTS register_attempts (

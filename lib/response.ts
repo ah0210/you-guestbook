@@ -1,4 +1,4 @@
-// lib/response.ts — 统一响应格式 + ErrorCode 错误码
+﻿// lib/response.ts — 统一响应格式 + ErrorCode 错误码
 
 export enum ErrorCode {
   // 认证相关 1xxx

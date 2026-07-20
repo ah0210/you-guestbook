@@ -1,4 +1,4 @@
-// functions/api/v1/auth/setup.ts — 初始化首个管理员
+﻿// functions/api/v1/auth/setup.ts — 初始化首个管理员
 // 仅当系统中不存在任何管理员时可用，且必须提供正确的 ADMIN_PASSWORD
 import { apiHandler } from '../../../../lib/middleware';
 import { hashPassword } from '../../../../lib/crypto';

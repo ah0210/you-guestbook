@@ -1,4 +1,4 @@
-<!-- src/admin/components/StatsCard.vue — 统计卡片 -->
+﻿<!-- src/admin/components/StatsCard.vue — 统计卡片 -->
 <template>
   <n-card size="small">
     <n-statistic :label="label" :value="value">

@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/anomalies.ts — 流量异常检测
+﻿// functions/api/v1/admin/analytics/anomalies.ts — 流量异常检测
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

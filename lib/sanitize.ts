@@ -1,4 +1,4 @@
-// lib/sanitize.ts — XSS 防护（HTML 转义 + 用户名清理）
+﻿// lib/sanitize.ts — XSS 防护（HTML 转义 + 用户名清理）
 
 /** 密码最大长度（与 crypto.ts 共享，防止哈希截断与验证长度不一致） */
 export const MAX_PASSWORD_LENGTH = 64;

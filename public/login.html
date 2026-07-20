@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>自游人知趣</title>
+  <title>Guestbook</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -81,18 +81,6 @@
     }
     .btn-primary:hover { opacity: 0.9; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-zhihu {
-      background: #fff;
-      color: #333;
-      border: 1px solid #e0e0e0;
-      gap: 10px;
-    }
-    .btn-zhihu:hover { background: #f7f8fa; }
-    .btn-zhihu:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-zhihu img {
-      width: 22px;
-      height: 22px;
-    }
     .divider {
       display: flex;
       align-items: center;
@@ -175,17 +163,6 @@
       min-height: 0;
       overflow: hidden;
     }
-    .zhihu-hint {
-      background: #f0f5ff;
-      color: #3b5998;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
     @media (max-width: 480px) {
       .login-card { padding: 28px 20px; border-radius: 12px; }
       .login-title { font-size: 20px; }
@@ -194,7 +171,7 @@
 </head>
 <body>
   <div class="login-card">
-    <h1 id="page-title" class="login-title">自游人知趣</h1>
+    <h1 id="page-title" class="login-title">Guestbook</h1>
     <p id="page-subtitle" class="login-subtitle">登录以继续</p>
 
     <div id="error-msg" class="error-msg"></div>
@@ -212,23 +189,13 @@
       <div id="turnstile-container"></div>
       <button id="btn-login" class="btn btn-primary" type="button">登 录</button>
 
-      <div class="divider"><span>或</span></div>
-
-      <button id="btn-zhihu" class="btn btn-zhihu" type="button">
-        <img src="https://guestbook.17you.com/images/zhihu.png" alt="知乎" />
-        知乎登录
-      </button>
-
       <div class="link-row">
         没有账号？<button type="button" class="link-btn" id="go-register">注册</button>
       </div>
     </div>
 
-    <!-- 注册表单（知乎跳转或手动注册时显示） -->
+    <!-- 注册表单 -->
     <div id="register-form" class="register-form">
-      <div id="zhihu-hint" class="zhihu-hint" style="display:none;">
-        &#128274; 请补充邮箱和手机号以完成注册
-      </div>
       <div class="field">
         <label for="reg-username">用户名</label>
         <input id="reg-username" type="text" placeholder="2-30位，中英文/数字/下划线" autocomplete="username" />
@@ -269,7 +236,7 @@
   <script>
     (function() {
       var API_BASE = window.location.origin;
-      var DEFAULT_REDIRECT = 'https://www.17you.com/';
+      var DEFAULT_REDIRECT = 'https://www.your-domain.com/';
       var REDIRECT_DELAY = 3000;
 
       /** Turnstile 相关状态 */
@@ -277,9 +244,6 @@
       var forceSkipTurnstile = false;
       var turnstileWidgetId = null;
       var turnstileRegWidgetId = null;
-
-      /** 知乎预填信息 */
-      var zhihuPrefill = null;
 
       var loginForm = document.getElementById('login-form');
       var registerForm = document.getElementById('register-form');
@@ -290,11 +254,9 @@
       var loginInput = document.getElementById('login-input');
       var passwordInput = document.getElementById('password-input');
       var btnLogin = document.getElementById('btn-login');
-      var btnZhihu = document.getElementById('btn-zhihu');
       var btnRegister = document.getElementById('btn-register');
       var goRegister = document.getElementById('go-register');
       var goLogin = document.getElementById('go-login');
-      var zhihuHint = document.getElementById('zhihu-hint');
 
       var regUsername = document.getElementById('reg-username');
       var regEmail = document.getElementById('reg-email');
@@ -316,7 +278,7 @@
       function showLoginForm() {
         registerForm.classList.remove('show');
         loginForm.classList.remove('hidden');
-        pageTitle.textContent = '自游人知趣';
+        pageTitle.textContent = 'Guestbook';
         pageSubtitle.textContent = '登录以继续';
         hideError();
         removeRegTurnstileWidget();
@@ -531,44 +493,13 @@
 
       /**
        * 处理 URL hash 中的指令
-       * 支持: #oauth_error=xxx, #access_token=xxx, #register?zhihu_uid=xxx&zhihu_name=xxx
+       * 支持: #oauth_error=xxx, #access_token=xxx
        */
       function handleHashCallback() {
         var hash = window.location.hash;
         if (!hash) return;
 
         var fragment = hash.substring(1);
-
-        /**
-         * 检查是否为注册跳转（知乎信息不完整时回调）
-         * 格式: #register?zhihu_uid=xxx&zhihu_name=xxx&zhihu_email=xxx
-         */
-        if (fragment.startsWith('register?')) {
-          var regParams = new URLSearchParams(fragment.substring(8));
-          zhihuPrefill = {
-            uid: regParams.get('zhihu_uid') || '',
-            fullname: regParams.get('zhihu_name') || '',
-            email: regParams.get('zhihu_email') || '',
-            phone_no: regParams.get('zhihu_phone') || '',
-            avatar_path: regParams.get('zhihu_avatar') || '',
-            redirect: regParams.get('redirect') || ''
-          };
-
-          showRegisterForm();
-
-          /** 预填知乎信息 */
-          if (zhihuPrefill.fullname) regUsername.value = zhihuPrefill.fullname;
-          if (zhihuPrefill.email) regEmail.value = zhihuPrefill.email;
-          if (zhihuPrefill.phone_no) regPhone.value = zhihuPrefill.phone_no;
-
-          /** 如果 email 和 phone 都有值，隐藏提示；否则显示 */
-          if (!zhihuPrefill.email || !zhihuPrefill.phone_no) {
-            zhihuHint.style.display = 'flex';
-          }
-
-          cleanHash();
-          return;
-        }
 
         var params = new URLSearchParams(fragment);
 
@@ -744,20 +675,8 @@
         });
       });
 
-      /** 知乎登录 */
-      btnZhihu.addEventListener('click', function() {
-        var redirectUrl = getRedirectUrl();
-        var zhihuAuthUrl = API_BASE + '/api/v1/auth/zhihu';
-        if (redirectUrl !== DEFAULT_REDIRECT) {
-          zhihuAuthUrl += '?redirect=' + encodeURIComponent(redirectUrl);
-        }
-        window.location.href = zhihuAuthUrl;
-      });
-
       /** 切换表单 */
       goRegister.addEventListener('click', function() {
-        zhihuPrefill = null;
-        zhihuHint.style.display = 'none';
         showRegisterForm();
       });
       goLogin.addEventListener('click', function() {

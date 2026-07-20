@@ -1,4 +1,4 @@
-// src/admin/entry.ts — 管理后台入口
+﻿// src/admin/entry.ts — 管理后台入口
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';

@@ -1,4 +1,4 @@
-// functions/api/v1/admin/config.ts — 系统配置管理
+﻿// functions/api/v1/admin/config.ts — 系统配置管理
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { logAdminAction } from '../../../../lib/admin-log';
 import { successResponse, errorResponse, ErrorCode } from '../../../../lib/response';

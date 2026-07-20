@@ -1,4 +1,4 @@
-// src/shared/types.ts — 前端共享类型定义
+﻿// src/shared/types.ts — 前端共享类型定义
 
 export interface PublicUser {
   id: number;

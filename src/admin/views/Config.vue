@@ -1,4 +1,4 @@
-<!-- src/admin/views/Config.vue — 系统配置 -->
+﻿<!-- src/admin/views/Config.vue — 系统配置 -->
 <template>
   <div>
     <n-h2>系统配置</n-h2>

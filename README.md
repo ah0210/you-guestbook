@@ -1,4 +1,4 @@
-# 自游人留言板（you-guestbook）v1.1.0
+﻿# Guestbook（you-guestbook）v1.0.0
 
 基于 **Cloudflare Pages + D1** 的留言板系统，可嵌入 Hugo/FixIt 博客。
 
@@ -6,7 +6,6 @@
 
 - 🚀 Cloudflare Pages + D1 部署，全球 CDN 加速
 - 🔐 JWT 双 Token 认证（Access 15min + Refresh 7d HttpOnly Cookie）
-- 🔑 知乎 OAuth 登录（完整信息直接注册，不完整跳转注册页预填）
 - 📱 手机号注册/用户管理（UNIQUE 占位符防空值冲突）
 - 🎨 Web Component Widget，Shadow DOM 样式隔离，支持主题自动跟随
 - 📝 秘密留言功能（仅隐藏内容，用户信息正常展示）
@@ -45,7 +44,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/ah0210/you-guestbook.git
+git clone https://github.com/your-org/you-guestbook.git
 cd you-guestbook
 
 # 安装依赖
@@ -202,11 +201,11 @@ wrangler secret put ADMIN_PASSWORD
 ### 首次部署步骤（已完成，仅供参考）
 
 1. Dashboard → 构建 → 计算 → Workers & Pages → 创建应用程序Create →  (不要选continue with github!) 往下拉看到：想要部署 Pages？点击：开始使用
-2. 导入现有 Git 存储库 从导入现有 Git 存储库开始。 → 从您的帐户部署站点 → 选择一个存储库 `ah0210/pinglun`
+2. 导入现有 Git 存储库 从导入现有 Git 存储库开始。 → 从您的帐户部署站点 → 选择一个存储库 `your-org/you-guestbook`
 3. 构建设置：构建命令Build command = `pnpm run build`，构建输出目录Output = `dist`
-4. **环境变量**（Settings → Environment variables）：加密添加 `JWT_SECRET`、`RESEND_API_KEY`、`TURNSTILE_SECRET_KEY`；普通添加 `ALLOWED_ORIGINS`（如 `https://www.17you.com,https://guestbook.17you.com`）、`EMAIL_DOMAIN`
+4. **环境变量**（Settings → Environment variables）：加密添加 `JWT_SECRET`、`RESEND_API_KEY`、`TURNSTILE_SECRET_KEY`；普通添加 `ALLOWED_ORIGINS`（如 `https://www.your-domain.com,https://guestbook.your-domain.com`）、`EMAIL_DOMAIN`
 5. **D1 绑定**（Settings → Functions → D1 database bindings）：`DB` → `guestbook`
-6. **自定义域名**（Settings → Custom domains）：添加 `guestbook.17you.com`
+6. **自定义域名**（Settings → Custom domains）：添加 `guestbook.your-domain.com`
 7. **初始化数据库**：`pnpm run db:init:remote && pnpm run db:seed:remote`
 8. **创建管理员**：`POST /api/v1/setup`（需先配置 ADMIN_PASSWORD）
 
@@ -229,27 +228,27 @@ Cloudflare 自动构建部署，约 2-3 分钟生效。
 
 | 配置项 | 值 |
 |--------|-----|
-| 访问地址 | `https://guestbook.17you.com` |
+| 访问地址 | `https://guestbook.your-domain.com` |
 | D1 绑定 | `DB` → `guestbook` |
 | 加密变量 | JWT_SECRET / RESEND_API_KEY / TURNSTILE_SECRET_KEY / ADMIN_PASSWORD |
-| 普通变量 | ALLOWED_ORIGINS / EMAIL_DOMAIN / ZHIHU_CLIENT_ID / ZHIHU_CLIENT_SECRET |
-| CORS | `https://www.17you.com,https://guestbook.17you.com`（生产已移除 localhost 与测试域） |
+| 普通变量 | ALLOWED_ORIGINS / EMAIL_DOMAIN |
+| CORS | `https://www.your-domain.com,https://guestbook.your-domain.com`（生产已移除 localhost 与测试域） |
 
 ### 验证清单
 
 ```bash
 # API
-curl https://guestbook.17you.com/api/v1/config
+curl https://guestbook.your-domain.com/api/v1/config
 
 # 缓存头
-curl -I https://guestbook.17you.com/api/v1/config    # 期望 public
-curl -I https://guestbook.17you.com/api/v1/messages   # 期望 no-store
+curl -I https://guestbook.your-domain.com/api/v1/config    # 期望 public
+curl -I https://guestbook.your-domain.com/api/v1/messages   # 期望 no-store
 
 # 管理后台
-# 浏览器打开 https://guestbook.17you.com/admin/
+# 浏览器打开 https://guestbook.your-domain.com/admin/
 
 # Widget 测试页
-# 浏览器打开 https://guestbook.17you.com/test-widget.html
+# 浏览器打开 https://guestbook.your-domain.com/test-widget.html
 ```
 
 ### Cron 定时任务（可选）
@@ -269,7 +268,7 @@ curl -I https://guestbook.17you.com/api/v1/messages   # 期望 no-store
 | 项目 | 说明 |
 |------|------|
 | Turnstile 密钥 | Dashboard 需配置**生产**密钥（非测试密钥 `1x/2x...`） |
-| Resend 域名 | 确认 `17you.com` 已在 Resend 完成 DNS 验证 |
+| Resend 域名 | 确认 `your-domain.com` 已在 Resend 完成 DNS 验证 |
 | JWT_SECRET | Dashboard 加密变量中已配置 |
 | ADMIN_PASSWORD | 初始化管理员闸门，务必使用强随机值；仅通过 Dashboard/.dev.vars 配置，禁止写入 `wrangler.toml` |
 ```
@@ -349,8 +348,8 @@ hugo-templates/
 # 留言板参数
 [params.guestbook]
   enable = true
-  apiBase = "https://guestbook.17you.com"           # 留言板服务地址（自动补全 /api/v1）
-  siteKey = "0x4AAAAAADKEiieQVd99LXKI"              # Turnstile Site Key
+  apiBase = "https://guestbook.your-domain.com"           # 留言板服务地址（自动补全 /api/v1）
+  siteKey = "1x00000000000000000000AA"              # Turnstile Site Key
   theme = "auto"                                     # "light" | "dark" | "auto"
   countFormat = "{count} 条留言"                      # 留言数量显示格式
 
@@ -591,8 +590,6 @@ GuestBoard.unmountAuthBar();
 | GET | `/api/v1/config` | 无 | 留言板配置 |
 | POST | `/api/v1/auth/register` | Turnstile | 用户注册 |
 | POST | `/api/v1/auth/login` | Turnstile | 登录 |
-| GET | `/api/v1/auth/zhihu` | 无 | 知乎 OAuth 授权跳转 |
-| GET | `/api/v1/auth/zhihu/callback` | 无 | 知乎 OAuth 回调 |
 | POST | `/api/v1/auth/refresh` | Cookie | 刷新 Token |
 | POST | `/api/v1/auth/logout` | Cookie | 登出 |
 | GET | `/api/v1/auth/verify-email` | 无 | 邮箱验证 |
@@ -639,13 +636,12 @@ GuestBoard.unmountAuthBar();
 ```
 you-guestbook/
 ├── functions/api/v1/    → 后端 API（Pages Functions）
-│   ├── auth/            → 认证（注册/登录/知乎OAuth/找回密码/重置密码/修改邮箱等）
+│   ├── auth/            → 认证（注册/登录/找回密码/重置密码/修改邮箱等）
 │   ├── admin/           → 管理员 API（用户管理/留言管理/配置/日志）
 │   ├── messages/        → 留言 CRUD
 │   ├── config.ts        → 公开配置端点
 │   └── _middleware.ts   → 全局 CORS 预检拦截
 ├── lib/                  → 共享工具库
-│   ├── zhihu.ts          → 知乎 OAuth API（字段兜底）
 │   ├── turnstile.ts      → Turnstile 统一验证封装（含紧急降级开关）
 │   ├── auth.ts           → Token 签发统一封装（createTokensForUser）
 │   ├── cors.ts           → CORS 中间件
@@ -659,7 +655,7 @@ you-guestbook/
 │   ├── admin/            → 管理后台 SPA（Naive UI）
 │   └── shared/           → 共享前端代码（types / api 封装）
 ├── public/               → 静态页面
-│   ├── login.html        → 登录/注册页（Turnstile render 模式 + 知乎预填）
+│   ├── login.html        → 登录/注册页（Turnstile render 模式）
 │   └── admin/            → 管理后台入口
 ├── hugo-templates/       → Hugo 集成文件（customPartials 方式）
 └── scheduled.ts          → Cron 定时清理
@@ -706,7 +702,6 @@ you-guestbook/
 - 异步邮件发送使用 `ctx.waitUntil()` 确保 Workers 不会提前终止
 - 跨域场景所有 fetch 请求 `credentials:'include'`，确保 Cookie 正确发送/接收
 - Turnstile 验证传递 `remoteIp`（`getClientIp`），失败会记录 Cloudflare 返回的 `error-codes`
-- 知乎 OAuth 回调字段显式兜底（`|| ''`），防止 undefined 运行时错误
 - 手机号 UNIQUE 约束使用占位符（`_phone_{uid}`），解决空值冲突
 - 留言列表 CDN 缓存安全：秘密/审核留言 content 后端脱敏为 null，前端按角色本地遮掩，CDN 缓存无隐私泄露风险
 - Turnstile SDK 动态加载（`ensureTurnstileSDK`），Hugo 嵌入场景不再依赖宿主页面预加载
@@ -963,4 +958,4 @@ npx wrangler d1 execute guestbook --local --command "SELECT sql FROM sqlite_mast
 - 🚫 禁止商业用途
 - 🚫 禁止移除或修改版权声明和许可声明
 
-版权所有 © 自游人 https://www.17you.com/
+MIT License © 2026 <YOUR_NAME> — 详见 [LICENSE](./LICENSE)

@@ -1,4 +1,4 @@
-<!-- src/widget/components/MessageList.vue — 留言列表 -->
+﻿<!-- src/widget/components/MessageList.vue — 留言列表 -->
 <template>
   <div>
     <div v-if="loading" class="gb-loading">加载中...</div>

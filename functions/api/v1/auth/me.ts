@@ -1,4 +1,4 @@
-// functions/api/v1/auth/me.ts — 当前用户信息 / 修改资料
+﻿// functions/api/v1/auth/me.ts — 当前用户信息 / 修改资料
 import { apiHandler } from '../../../../lib/middleware';
 import { getAvatarUrl } from '../../../../lib/avatar';
 import { escapeHtml, validateDisplayName } from '../../../../lib/sanitize';

@@ -1,4 +1,4 @@
-// lib/admin-log.ts — 管理员操作日志
+﻿// lib/admin-log.ts — 管理员操作日志
 
 import type { Env } from './types';
 

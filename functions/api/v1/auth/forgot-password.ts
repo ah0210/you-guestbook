@@ -1,4 +1,4 @@
-// functions/api/v1/auth/forgot-password.ts — 忘记密码（发送重置邮件）
+﻿// functions/api/v1/auth/forgot-password.ts — 忘记密码（发送重置邮件）
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { verifyTurnstileForRequest } from '../../../../lib/turnstile';
 import { sendEmail, buildResetPasswordHtml } from '../../../../lib/email';

@@ -1,4 +1,4 @@
-<!-- src/widget/components/MessageItem.vue — 单条留言 -->
+﻿<!-- src/widget/components/MessageItem.vue — 单条留言 -->
 <template>
   <li class="gb-message-item">
     <div class="gb-message-header">

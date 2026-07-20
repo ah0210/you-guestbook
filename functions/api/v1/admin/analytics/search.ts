@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/search.ts — 搜索来源分析（增强版）
+﻿// functions/api/v1/admin/analytics/search.ts — 搜索来源分析（增强版）
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

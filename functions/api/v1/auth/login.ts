@@ -1,4 +1,4 @@
-// functions/api/v1/auth/login.ts — 用户登录（返回双 Token）
+﻿// functions/api/v1/auth/login.ts — 用户登录（返回双 Token）
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { verifyPassword } from '../../../../lib/crypto';
 import { verifyTurnstileForRequest } from '../../../../lib/turnstile';

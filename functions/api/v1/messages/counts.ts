@@ -1,4 +1,4 @@
-// functions/api/v1/messages/counts.ts — 按 page_id 批量统计留言数量 + 浏览量
+﻿// functions/api/v1/messages/counts.ts — 按 page_id 批量统计留言数量 + 浏览量
 import { apiHandler } from '../../../../lib/middleware';
 import { cacheHeaders } from '../../../../lib/cache-headers';
 import { ErrorCode, errorResponse, successResponse } from '../../../../lib/response';

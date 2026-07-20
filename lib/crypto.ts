@@ -1,4 +1,4 @@
-// lib/crypto.ts — PBKDF2 密码哈希（Web Crypto API 内置，零外部依赖）
+﻿// lib/crypto.ts — PBKDF2 密码哈希（Web Crypto API 内置，零外部依赖）
 
 import { MAX_PASSWORD_LENGTH } from './sanitize';
 

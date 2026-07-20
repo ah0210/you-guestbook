@@ -1,4 +1,4 @@
-// functions/api/v1/admin/cleanup.ts — 手动触发清理
+﻿// functions/api/v1/admin/cleanup.ts — 手动触发清理
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { logAdminAction } from '../../../../lib/admin-log';
 import { successResponse } from '../../../../lib/response';

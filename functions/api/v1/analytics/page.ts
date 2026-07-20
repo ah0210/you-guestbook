@@ -1,4 +1,4 @@
-// functions/api/v1/analytics/page.ts — 当前页面统计查询
+﻿// functions/api/v1/analytics/page.ts — 当前页面统计查询
 import { getPageStats } from '../../../../lib/analytics';
 import { apiHandler } from '../../../../lib/middleware';
 import { cacheHeaders } from '../../../../lib/cache-headers';

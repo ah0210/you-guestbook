@@ -1,4 +1,4 @@
-// functions/api/v1/messages/index.ts — 留言列表 + 提交留言
+﻿// functions/api/v1/messages/index.ts — 留言列表 + 提交留言
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { verifyTurnstile, shouldSkipTurnstile } from '../../../../lib/turnstile';
 import { escapeHtml, toDbDatetime } from '../../../../lib/sanitize';

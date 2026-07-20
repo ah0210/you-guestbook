@@ -1,4 +1,4 @@
-// src/widget/styles/theme.ts — 共享样式单例（adoptedStyleSheets）
+﻿// src/widget/styles/theme.ts — 共享样式单例（adoptedStyleSheets）
 // 所有 Web Component（GuestBoard、AuthBar）共用同一个 CSSStyleSheet 对象
 // 宿主页面通过 --guestbook-* CSS 变量自定义主题，变量穿透 Shadow DOM 生效
 

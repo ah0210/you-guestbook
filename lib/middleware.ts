@@ -1,4 +1,4 @@
-// lib/middleware.ts — 鉴权中间件（JWT + 角色检查）
+﻿// lib/middleware.ts — 鉴权中间件（JWT + 角色检查）
 
 import type { Env, JwtPayload, PagesFunctionEnv } from './types';
 import { verifyAccessToken } from './jwt';

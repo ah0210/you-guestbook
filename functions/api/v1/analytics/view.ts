@@ -1,4 +1,4 @@
-// functions/api/v1/analytics/view.ts — 访问事件上报（WaitUntil 异步写入）
+﻿// functions/api/v1/analytics/view.ts — 访问事件上报（WaitUntil 异步写入）
 import { AnalyticsRequestError, recordPageView } from '../../../../lib/analytics';
 import { apiHandler } from '../../../../lib/middleware';
 import { noCacheHeaders } from '../../../../lib/cache-headers';

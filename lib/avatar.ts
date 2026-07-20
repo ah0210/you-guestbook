@@ -1,4 +1,4 @@
-// lib/avatar.ts — Gravatar 头像 URL 生成（cravatar.cn 中国镜像）
+﻿// lib/avatar.ts — Gravatar 头像 URL 生成（cravatar.cn 中国镜像）
 
 export function getAvatarUrl(email: string, avatar?: string, size = 80): string {
   // 用户自定义头像优先

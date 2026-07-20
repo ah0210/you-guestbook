@@ -1,4 +1,4 @@
-// scheduled.ts — Cron Trigger 入口
+﻿// scheduled.ts — Cron Trigger 入口
 // 当前项目留言相关表数据量极低（博客留言板场景），但以下清理可防止历史表无限增长：
 // - analytics_events: 原始事件保留 90 天
 // - email_verifications / password_resets: 过期或已使用的验证码定期清理

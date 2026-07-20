@@ -1,4 +1,4 @@
-// ===== 环境变量类型 =====
+﻿// ===== 环境变量类型 =====
 export interface Env {
   DB: D1Database;
   JWT_SECRET: string;
@@ -13,8 +13,6 @@ export interface Env {
   ADMIN_USERNAME?: string;
   ADMIN_EMAIL?: string;
   ADMIN_PASSWORD?: string;
-  ZHIHU_APP_ID?: string;
-  ZHIHU_APP_KEY?: string;
 }
 
 // ===== 数据库行类型 =====

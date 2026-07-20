@@ -1,4 +1,4 @@
-<!-- src/widget/components/Pagination.vue — 加载更多按钮（替代传统页码） -->
+﻿<!-- src/widget/components/Pagination.vue — 加载更多按钮（替代传统页码） -->
 <template>
   <div v-if="hasMore" class="gb-pagination">
     <button

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   /**
    * 支持三种选择器：
    * 1. [data-guestbook-count][data-page-id] — 列表页留言数（guestbook-count.html）

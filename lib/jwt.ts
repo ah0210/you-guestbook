@@ -1,4 +1,4 @@
-// lib/jwt.ts — JWT 签发与验证（Web Crypto API HMAC-SHA256）
+﻿// lib/jwt.ts — JWT 签发与验证（Web Crypto API HMAC-SHA256）
 
 import type { Env, JwtPayload } from './types';
 

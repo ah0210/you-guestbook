@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/referrers.ts — 来源域名统计
+﻿// functions/api/v1/admin/analytics/referrers.ts — 来源域名统计
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

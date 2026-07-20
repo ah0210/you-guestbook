@@ -1,4 +1,4 @@
-// functions/api/v1/auth/register.ts — 用户注册
+﻿// functions/api/v1/auth/register.ts — 用户注册
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { hashPassword } from '../../../../lib/crypto';
 import { verifyTurnstileForRequest } from '../../../../lib/turnstile';

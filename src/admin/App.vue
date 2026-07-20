@@ -1,4 +1,4 @@
-<!-- src/admin/App.vue — 管理后台根组件 -->
+﻿<!-- src/admin/App.vue — 管理后台根组件 -->
 <template>
   <router-view />
 </template>

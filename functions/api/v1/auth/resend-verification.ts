@@ -1,4 +1,4 @@
-// functions/api/v1/auth/resend-verification.ts — 重发验证邮件
+﻿// functions/api/v1/auth/resend-verification.ts — 重发验证邮件
 import { apiHandler } from '../../../../lib/middleware';
 import { sendEmail, buildVerifyEmailHtml } from '../../../../lib/email';
 import { generateToken, hashToken } from '../../../../lib/jwt';

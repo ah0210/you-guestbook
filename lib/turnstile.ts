@@ -1,4 +1,4 @@
-// lib/turnstile.ts — Cloudflare Turnstile 验证码校验
+﻿// lib/turnstile.ts — Cloudflare Turnstile 验证码校验
 
 import { getClientIp } from './middleware';
 import { ErrorCode } from './response';

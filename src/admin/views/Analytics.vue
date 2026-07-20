@@ -1,4 +1,4 @@
-<!-- src/admin/views/Analytics.vue — 流量分析 -->
+﻿<!-- src/admin/views/Analytics.vue — 流量分析 -->
 <template>
   <div>
     <n-h2>流量分析</n-h2>

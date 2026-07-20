@@ -1,4 +1,4 @@
-// functions/api/v1/admin/users/[id].ts — 变更用户角色/状态、删除用户
+﻿// functions/api/v1/admin/users/[id].ts — 变更用户角色/状态、删除用户
 import { apiHandler, getClientIp } from '../../../../../lib/middleware';
 import { logAdminAction } from '../../../../../lib/admin-log';
 import { adjustMessageCount } from '../../../../../lib/analytics';

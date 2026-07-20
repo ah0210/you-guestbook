@@ -1,4 +1,4 @@
-// src/widget/utils/turnstile.ts — Turnstile SDK 动态加载与验证工具
+﻿// src/widget/utils/turnstile.ts — Turnstile SDK 动态加载与验证工具
 
 /** Turnstile SDK URL（explicit render 模式，需手动调 render） */
 const TURNSTILE_SDK_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';

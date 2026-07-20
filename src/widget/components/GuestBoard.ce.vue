@@ -1,4 +1,4 @@
-<!-- src/widget/components/GuestBoard.ce.vue — 留言板主容器（Web Component） -->
+﻿<!-- src/widget/components/GuestBoard.ce.vue — 留言板主容器（Web Component） -->
 <template>
   <div class="gb-container">
     <!-- 头部：标题 + 用户栏 -->
@@ -73,7 +73,7 @@
     <!-- 版权信息 -->
     <div class="gb-footer">
       <span class="gb-copyright">
-        &copy; <a href="https://www.17you.com/" target="_blank" rel="noopener noreferrer">自游人留言板</a>
+        &copy; <a href="https://www.your-domain.com/" target="_blank" rel="noopener noreferrer">Guestbook</a>
       </span>
       <span class="gb-version">v1.0.0</span>
     </div>

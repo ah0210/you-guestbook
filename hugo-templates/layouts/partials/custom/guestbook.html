@@ -1,9 +1,9 @@
-<!-- Hugo: layouts/partials/custom/guestbook.html -->
+﻿<!-- Hugo: layouts/partials/custom/guestbook.html -->
 <!-- 评论区留言板：<guestbook-widget> Web Component -->
 <!-- maxLength/minLength 由后端 board_config 控制，前端自动从 /api/v1/config 获取 -->
 {{- if .Site.Params.guestbook.enable | default false }}
 {{- if .Params.guestbook | default true }}
-{{- $apiBase := .Site.Params.guestbook.apiBase | default "https://guestbook.17you.com" -}}
+{{- $apiBase := .Site.Params.guestbook.apiBase | default "https://guestbook.your-domain.com" -}}
 {{- $siteKey := .Site.Params.guestbook.siteKey -}}
 {{- $theme := .Site.Params.guestbook.theme | default "auto" -}}
 {{- $pageId := .RelPermalink -}}

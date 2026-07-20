@@ -1,7 +1,7 @@
-<!-- Hugo: layouts/partials/custom/guestbook-footer.html -->
+﻿<!-- Hugo: layouts/partials/custom/guestbook-footer.html -->
 <!-- 页面底部：widget.js 懒加载 + 评论计数同步 + 暗色模式自动同步 -->
 {{- if .Site.Params.guestbook.enable | default false }}
-{{- $widgetHost := .Site.Params.guestbook.apiBase | default "https://guestbook.17you.com" -}}
+{{- $widgetHost := .Site.Params.guestbook.apiBase | default "https://guestbook.your-domain.com" -}}
 {{- $theme := .Site.Params.guestbook.theme | default "auto" -}}
 <script>
 window.GUESTBOOK_API_BASE = '{{ $widgetHost }}';

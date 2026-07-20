@@ -1,4 +1,4 @@
-// functions/api/v1/admin/stats.ts — 数据统计面板
+﻿// functions/api/v1/admin/stats.ts — 数据统计面板
 import { apiHandler, getClientIp } from '../../../../lib/middleware';
 import { successResponse } from '../../../../lib/response';
 import type { Env, JwtPayload } from '../../../../lib/types';

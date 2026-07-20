@@ -1,4 +1,4 @@
-<!-- src/widget/components/AuthModal.vue — 认证弹窗（6 种模式） -->
+﻿<!-- src/widget/components/AuthModal.vue — 认证弹窗（6 种模式） -->
 <template>
     <div v-if="visible" ref="overlayRef" class="gb-modal-overlay" @click="handleOverlayClick" @touchend="handleOverlayTouchEnd">
       <div class="gb-modal">

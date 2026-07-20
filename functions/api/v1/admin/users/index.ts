@@ -1,4 +1,4 @@
-// functions/api/v1/admin/users/index.ts — 用户管理列表
+﻿// functions/api/v1/admin/users/index.ts — 用户管理列表
 import { apiHandler } from '../../../../../lib/middleware';
 import { paginatedResponse } from '../../../../../lib/response';
 import { getAvatarUrl } from '../../../../../lib/avatar';

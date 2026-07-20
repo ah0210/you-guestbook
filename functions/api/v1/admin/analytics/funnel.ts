@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/funnel.ts — 页面转化漏斗
+﻿// functions/api/v1/admin/analytics/funnel.ts — 页面转化漏斗
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

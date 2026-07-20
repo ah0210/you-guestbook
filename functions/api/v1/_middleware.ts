@@ -1,4 +1,4 @@
-// functions/api/v1/_middleware.ts — 全局 CORS 预检拦截
+﻿// functions/api/v1/_middleware.ts — 全局 CORS 预检拦截
 // Cloudflare Pages Functions 按方法名路由（onRequestGet/onRequestPost…），
 // OPTIONS 请求没有对应的 onRequestOptions，会直接返回 405。
 // 此中间件在所有 /api/v1/* 路由之前执行，拦截 OPTIONS 预检请求。

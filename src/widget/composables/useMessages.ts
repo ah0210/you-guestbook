@@ -1,4 +1,4 @@
-// src/widget/composables/useMessages.ts — 留言 CRUD（游标分页）
+﻿// src/widget/composables/useMessages.ts — 留言 CRUD（游标分页）
 
 import { ref } from 'vue';
 import { apiGet, apiPost } from '../../shared/api';

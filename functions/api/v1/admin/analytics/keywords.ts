@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/keywords.ts — 搜索关键词反查
+﻿// functions/api/v1/admin/analytics/keywords.ts — 搜索关键词反查
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

@@ -1,4 +1,4 @@
-<!-- src/widget/components/MessageForm.vue — 留言输入框 -->
+﻿<!-- src/widget/components/MessageForm.vue — 留言输入框 -->
 <template>
   <div class="gb-form">
     <textarea

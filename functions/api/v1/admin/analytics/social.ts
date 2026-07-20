@@ -1,4 +1,4 @@
-// functions/api/v1/admin/analytics/social.ts — 社交传播分析
+﻿// functions/api/v1/admin/analytics/social.ts — 社交传播分析
 import { apiHandler } from '../../../../../lib/middleware';
 import { successResponse } from '../../../../../lib/response';
 import { noCacheHeaders } from '../../../../../lib/cache-headers';

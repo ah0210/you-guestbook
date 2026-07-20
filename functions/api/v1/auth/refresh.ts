@@ -1,6 +1,6 @@
-// functions/api/v1/auth/refresh.ts — 刷新 Access Token（Token Rotation）
+﻿// functions/api/v1/auth/refresh.ts — 刷新 Access Token（Token Rotation）
 import { apiHandler, getRefreshTokenFromCookie } from '../../../../lib/middleware';
-import { verifyAccessToken } from '../../../../lib/jwt';
+import { verifyAccessToken, hashToken } from '../../../../lib/jwt';
 import { createTokensForUser } from '../../../../lib/auth';
 import { ErrorCode, errorResponse } from '../../../../lib/response';
 import { toDbDatetime } from '../../../../lib/sanitize';
