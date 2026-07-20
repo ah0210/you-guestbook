@@ -1,4 +1,4 @@
-﻿# Guestbook（you-guestbook）v1.0.0
+﻿# 自游人 Guestbook v1.0.0
 
 基于 **Cloudflare Pages + D1** 的留言板系统，可嵌入 Hugo/FixIt 博客。
 
@@ -958,4 +958,4 @@ npx wrangler d1 execute guestbook --local --command "SELECT sql FROM sqlite_mast
 - 🚫 禁止商业用途
 - 🚫 禁止移除或修改版权声明和许可声明
 
-MIT License © 2026 <YOUR_NAME> — 详见 [LICENSE](./LICENSE)
+自游人 https://www.17you.com/
