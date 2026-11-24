@@ -79,34 +79,34 @@ async function queryTotals(env: Env, opts: { page: number; limit: number; search
 async function queryDaily(env: Env, opts: { page: number; limit: number; search: string; period: string; offset: number }) {
   const { page, limit, search, period, offset } = opts;
 
-  // 根据时间段计算日期范围（modifier 使用绑定参数，避免 D1 解析内联字面量失败）
+  // 根据时间段计算日期范围
   let dateCondition = '';
-  let dateBinds: string[] = [];
+  let dateBind: string;
   switch (period) {
     case 'today':
-      dateCondition = "date = date('now', ?)";
-      dateBinds = ['+8 hours'];
+      dateCondition = "date = date('now', '+8 hours')";
+      dateBind = '';
       break;
     case 'yesterday':
-      dateCondition = "date = date('now', ?, ?)";
-      dateBinds = ['+8 hours', '-1 day'];
+      dateCondition = "date = date('now', '+8 hours', '-1 day')";
+      dateBind = '';
       break;
     case '7d':
-      dateCondition = "date >= date('now', ?, ?)";
-      dateBinds = ['+8 hours', '-6 days'];
+      dateCondition = "date >= date('now', '+8 hours', '-6 days')";
+      dateBind = '';
       break;
     case '30d':
-      dateCondition = "date >= date('now', ?, ?)";
-      dateBinds = ['+8 hours', '-29 days'];
+      dateCondition = "date >= date('now', '+8 hours', '-29 days')";
+      dateBind = '';
       break;
     default:
-      dateCondition = "date >= date('now', ?, ?)";
-      dateBinds = ['+8 hours', '-6 days'];
+      dateCondition = "date >= date('now', '+8 hours', '-6 days')";
+      dateBind = '';
   }
 
-  // 搜索条件（日期绑定值在前，搜索 pattern 在后）
+  // 搜索条件
   let searchCondition = '';
-  const binds: unknown[] = [...dateBinds];
+  const binds: unknown[] = [];
   if (search) {
     searchCondition = 'AND (page_id LIKE ? OR page_title LIKE ? OR page_url LIKE ?)';
     const pattern = `%${search}%`;
